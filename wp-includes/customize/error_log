@@ -1,0 +1,6 @@
+[21-Feb-2016 15:15:23 UTC] PHP Fatal error:  Class 'WP_Customize_Cropped_Image_Control' not found in /home/daunvdab/public_html/wp-includes/customize/class-wp-customize-site-icon-control.php on line 19
+[21-Feb-2016 15:15:49 UTC] PHP Fatal error:  Class 'WP_Customize_Control' not found in /home/daunvdab/public_html/wp-includes/customize/class-wp-customize-nav-menu-item-control.php on line 15
+[27-Feb-2016 00:52:15 UTC] PHP Fatal error:  Class 'WP_Customize_Cropped_Image_Control' not found in /home/daunvdab/public_html/wp-includes/customize/class-wp-customize-site-icon-control.php on line 19
+[27-Feb-2016 00:52:34 UTC] PHP Fatal error:  Class 'WP_Customize_Control' not found in /home/daunvdab/public_html/wp-includes/customize/class-wp-customize-nav-menu-item-control.php on line 15
+[17-Apr-2016 21:54:26 UTC] PHP Fatal error:  Class 'WP_Customize_Cropped_Image_Control' not found in /home/daunvdab/public_html/wp-includes/customize/class-wp-customize-site-icon-control.php on line 19
+[17-Apr-2016 21:54:37 UTC] PHP Fatal error:  Class 'WP_Customize_Control' not found in /home/daunvdab/public_html/wp-includes/customize/class-wp-customize-nav-menu-item-control.php on line 15
