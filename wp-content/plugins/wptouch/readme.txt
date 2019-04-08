@@ -2,8 +2,8 @@
 Contributors: wptouch, sureswiftcapital, duanestorey, dalemugford, adamdipardo, oxymoron
 Tags: wptouch, iphone, ipod, bravenewcode, mobile, mobile-friendly, android, blackberry, smartphone, responsive, design, mobile plugin, ios, mobile theme
 Requires at least: 4.2
-Stable tag: 4.3.27
-Tested up to: 4.9
+Stable tag: 4.3.36
+Tested up to: 5.1
 License: GPLv2
 
 Make your WordPress website mobile-friendly with just a few clicks.
@@ -32,6 +32,46 @@ For more information visit [WPtouch.com](http://www.wptouch.com/?utm_campaign=wp
 6. Theme settings
 
 == Changelog ==
+
+= Version 4.3.36 (March 26th, 2019) =
+
+* Added: kinsta.com check so they can optimize WPtouch plugin caching on their hosting platform.
+* Updated: Tested up to date.
+
+= Version 4.3.35 (February 11th, 2019) =
+
+* Fixed: Issue where links with sms protocols would get stripped from content.
+
+= Version 4.3.34 (November 21st, 2018) =
+
+* Fixed: Issue where iframe height might be cut off + additional Gutenberg/block related styling changes.
+
+= Version 4.3.33 (November 6th, 2018) =
+
+* Fixed: Bauhaus version bump.
+
+= Version 4.3.32 (November 6th, 2018) =
+
+* Fixed: Gutenberg/blocks compatibility.
+* Fixed: Fixed issue with YouTube embeds and AdSense code could white screen page.
+* Fixed: PHP7+ warning.
+
+= Version 4.3.31 (October 29th, 2018) =
+
+* Fixed: Prevent CDATA tags being stripped from custom analytics text area entries.
+
+= Version 4.3.30 (October 19th, 2018) =
+
+* Fixed: Script tag attributes being stripped from custom analytics text area entries.
+
+= Version 4.3.29 (October 16th, 2018) =
+
+* Fixed: Add helper file to output WordPress comment form cookie checkbox field for child themes that contain custom comment form layouts.
+* Fixed: Potential XSS vulnerability relating to saving plugin settings in the WordPress admin.
+
+= Version 4.3.28 (May 10th, 2018) =
+
+* Fixed: TypeError on setSelectionRange JavaScript error for email field on checkout page.
 
 = Version 4.3.27 (March 8th, 2018) =
 

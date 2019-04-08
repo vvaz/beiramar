@@ -75,6 +75,14 @@ iframe {
 	max-width: 100% !important;
 }
 
+.wp-block-video {
+    margin: 0 0 20px;
+}
+
+.wp-block-video video {
+    max-width: 100%;
+}
+
 .light-body {
 	text-shadow: rgba(255,255,255,.2) 0 1px 0;
 }
@@ -92,6 +100,37 @@ sup {
 hr {
 	border: 1px dashed rgba(0,0,0,.2);
 }
+
+figure.wp-block-embed,
+.wp-block-code,
+figure.wp-block-pullquote,
+.wp-block-verse,
+.wp-block-preformatted {
+    margin: 0;
+    max-width: 100%;
+    overflow: hidden;
+    overflow-x: auto;
+}
+
+/* Facebook embed override */
+.wp-block-embed-facebook .fb_iframe_widget_fluid span {
+    max-width: 100% !important;
+    height: auto !important;
+}
+
+audio {
+    max-width: 100%;
+}
+
+.wp-block-audio,
+.wp-block-audio.alignright,
+.wp-block-audio.alignwide,
+.wp-block-audio.alignleft,
+.wp-block-audio.alignfull {
+    float: none;
+    margin: 0;
+}
+
 
 .post ul {
 	list-style-type: disc;
@@ -122,7 +161,12 @@ blockquote, q {
 	margin-left: auto !important;
 	margin-right: auto !important;
 	float: none !important;
-	display: block !important;
+}
+
+/* Gutenberg/blocks */
+.post .wp-block-gallery,
+.post .wp-block-gallery li {
+    list-style: none;
 }
 
 .alignleft {
@@ -186,9 +230,6 @@ code, kbd, pre, tt {
 
 var {
 	color: red;
-}
-
-pre {
 }
 
 ins {
@@ -1493,5 +1534,4 @@ span.wpcf7-form-control-wrap {
 
 .table-parent {
 	max-width: 100%;
-	overflow: scroll;
 }

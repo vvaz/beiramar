@@ -55,10 +55,12 @@ class WPtouchCacheSmash {
 	private function find_in_array_no_case( $needle, $haystack_array ) {
 		$found = false;
 
-		foreach( $haystack_array as $key => $value ) {
-			$new_value = strtolower( $value );
-			if ( $new_value == strtolower( $needle ) ) {
-				$found = true;
+		if ( ! empty( $haystack_array ) ) {
+			foreach( $haystack_array as $key => $value ) {
+				$new_value = strtolower( $value );
+				if ( $new_value == strtolower( $needle ) ) {
+					$found = true;
+				}
 			}
 		}
 

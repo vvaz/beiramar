@@ -40,6 +40,8 @@ add_action( 'wptouch_post_process_image_file', 'foundation_process_image_file', 
 
 add_action( 'wptouch_language_insert', 'foundation_add_wpml_lang_switcher', 20 );
 
+add_filter( 'kses_allowed_protocols', 'foundation_allowed_protocols' );
+
 function foundation_add_wpml_lang_switcher() {
 	$settings = wptouch_get_settings();
 
@@ -1434,4 +1436,37 @@ function foundation_sanitize_wptouch_settings( $settings ) {
 	}
 
 	return $settings;
+}
+
+/**
+ * Outputs the comment form's cookie consent checkbox introduced in
+ * WP core v4.9.6. This is used in themes that don't use the standard
+ * WP core comment form via comment_form(), as that function now
+ * outputs this field automatically.
+ */
+function foundation_output_comment_form_cookie_consent_checkbox() {
+	$commenter = wp_get_current_commenter();
+	$consent   = empty( $commenter['comment_author_email'] ) ? '' : ' checked="checked"';
+	?>
+	<p class="comment-form-cookies-consent body-font">
+		<label for="wp-comment-cookies-consent" class="body-font">
+			<input class="body-font" id="wp-comment-cookies-consent" name="wp-comment-cookies-consent" type="checkbox" value="yes" <?php echo $consent; ?> />
+			Save my name, email, and website in this browser for the next time I comment.
+		</label>
+	</p>
+	<?php
+}
+
+/**
+ * Add sms and other protocols so they are not stripped
+ * from output.
+ *
+ * @param array $protocols List of allowed protocols.
+ *
+ * @return array
+ */
+function foundation_allowed_protocols( $protocols ) {
+	$protocols[] = 'sms';
+
+	return $protocols;
 }

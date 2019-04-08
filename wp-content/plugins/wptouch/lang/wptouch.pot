@@ -1,14 +1,14 @@
-# Copyright (C) 2018 WPtouch Mobile Plugin
+# Copyright (C) 2019 WPtouch Mobile Plugin
 # This file is distributed under the same license as the WPtouch Mobile Plugin package.
 msgid ""
 msgstr ""
-"Project-Id-Version: WPtouch Mobile Plugin 4.3.26\n"
+"Project-Id-Version: WPtouch Mobile Plugin 4.3.36\n"
 "Report-Msgid-Bugs-To: http://wordpress.org/tag/wptouch\n"
-"POT-Creation-Date: 2018-03-09 12:58:55+00:00\n"
+"POT-Creation-Date: 2019-03-27 03:17:53+00:00\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2018-MO-DA HO:MI+ZONE\n"
+"PO-Revision-Date: 2019-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 
@@ -831,7 +831,7 @@ msgstr ""
 
 #: admin/pages/wptouch-admin-general-settings.php:659
 #: admin/settings/html/installed_icon_sets_ajax.php:4
-#: core/class-wptouch-pro.php:2187 core/class-wptouch-pro.php:2188
+#: core/class-wptouch-pro.php:2192 core/class-wptouch-pro.php:2193
 #: core/config.php:54
 msgid "Custom Icons"
 msgstr ""
@@ -1185,7 +1185,7 @@ msgstr ""
 msgid "Setup Wizard"
 msgstr ""
 
-#: core/admin-menu.php:49 core/class-wptouch-pro.php:1659
+#: core/admin-menu.php:49 core/class-wptouch-pro.php:1664
 msgid "Settings"
 msgstr ""
 
@@ -1398,15 +1398,15 @@ msgstr ""
 msgid "Install Extensions"
 msgstr ""
 
-#: core/class-wptouch-pro.php:1696
+#: core/class-wptouch-pro.php:1701
 msgid "%s Changelog"
 msgstr ""
 
-#: core/class-wptouch-pro.php:3113
+#: core/class-wptouch-pro.php:3118
 msgid "Directory Problem"
 msgstr ""
 
-#: core/class-wptouch-pro.php:3114
+#: core/class-wptouch-pro.php:3119
 msgid "One or more required directories could not be created"
 msgstr ""
 
@@ -2087,7 +2087,7 @@ msgstr ""
 msgid "Website"
 msgstr ""
 
-#: themes/foundation/default/comments.php:77
+#: themes/foundation/default/comments.php:79
 msgid "Publish"
 msgstr ""
 
@@ -2371,7 +2371,7 @@ msgid "iPad"
 msgstr ""
 
 #: themes/foundation/modules/tablets/tablets.php:64
-#: themes/foundation/root-functions.php:554
+#: themes/foundation/root-functions.php:556
 msgid "%d by %d pixels (PNG)"
 msgstr ""
 
@@ -2391,131 +2391,131 @@ msgstr ""
 msgid "Custom Content"
 msgstr ""
 
-#: themes/foundation/root-functions.php:52
+#: themes/foundation/root-functions.php:54
 msgid "Language: "
 msgstr ""
 
-#: themes/foundation/root-functions.php:467
+#: themes/foundation/root-functions.php:469
 msgid "Theme Colors"
 msgstr ""
 
-#: themes/foundation/root-functions.php:483
+#: themes/foundation/root-functions.php:485
 msgid "Number of posts in post listings"
 msgstr ""
 
-#: themes/foundation/root-functions.php:484
+#: themes/foundation/root-functions.php:486
 msgid ""
 "Overrides the WordPress Reading settings for \"Blog pages show at most\""
 msgstr ""
 
-#: themes/foundation/root-functions.php:496
+#: themes/foundation/root-functions.php:498
 msgid "Excluded categories"
 msgstr ""
 
-#: themes/foundation/root-functions.php:497
+#: themes/foundation/root-functions.php:499
 msgid "Comma separated by category name"
 msgstr ""
 
-#: themes/foundation/root-functions.php:504
+#: themes/foundation/root-functions.php:506
 msgid "Excluded tags"
 msgstr ""
 
-#: themes/foundation/root-functions.php:505
+#: themes/foundation/root-functions.php:507
 msgid "Comma separated by tag name"
 msgstr ""
 
-#: themes/foundation/root-functions.php:527
+#: themes/foundation/root-functions.php:529
 msgid "Blog"
 msgstr ""
 
-#: themes/foundation/root-functions.php:537
-#: themes/foundation/root-functions.php:1357
+#: themes/foundation/root-functions.php:539
+#: themes/foundation/root-functions.php:1359
 msgid "Pages"
 msgstr ""
 
-#: themes/foundation/root-functions.php:548
+#: themes/foundation/root-functions.php:550
 msgid "Site Icon"
 msgstr ""
 
-#: themes/foundation/root-functions.php:572
+#: themes/foundation/root-functions.php:574
 msgid "Site Logo"
 msgstr ""
 
-#: themes/foundation/root-functions.php:589
+#: themes/foundation/root-functions.php:591
 msgid "Header"
 msgstr ""
 
-#: themes/foundation/root-functions.php:603
+#: themes/foundation/root-functions.php:605
 msgid "Custom footer content"
 msgstr ""
 
-#: themes/foundation/root-functions.php:604
+#: themes/foundation/root-functions.php:606
 msgid "HTML is allowed"
 msgstr ""
 
-#: themes/foundation/root-functions.php:621
+#: themes/foundation/root-functions.php:623
 msgid "Footer"
 msgstr ""
 
-#: themes/foundation/root-functions.php:633
+#: themes/foundation/root-functions.php:635
 msgid "Custom CSS"
 msgstr ""
 
-#: themes/foundation/root-functions.php:639
+#: themes/foundation/root-functions.php:641
 msgid "Custom CSS Declarations"
 msgstr ""
 
-#: themes/foundation/root-functions.php:1000
+#: themes/foundation/root-functions.php:1002
 msgid "search results for '%s'"
 msgstr ""
 
-#: themes/foundation/root-functions.php:1003
+#: themes/foundation/root-functions.php:1005
 msgid "%sCategories &rsaquo;%s %s"
 msgstr ""
 
-#: themes/foundation/root-functions.php:1005
+#: themes/foundation/root-functions.php:1007
 msgid "Tags &rsaquo; %s"
 msgstr ""
 
-#: themes/foundation/root-functions.php:1007
 #: themes/foundation/root-functions.php:1009
 #: themes/foundation/root-functions.php:1011
+#: themes/foundation/root-functions.php:1013
 msgid "Archives &rsaquo; %s"
 msgstr ""
 
-#: themes/foundation/root-functions.php:1025
+#: themes/foundation/root-functions.php:1027
 msgid "Load more from this category"
 msgstr ""
 
-#: themes/foundation/root-functions.php:1027
+#: themes/foundation/root-functions.php:1029
 msgid "Load more tagged like this"
 msgstr ""
 
-#: themes/foundation/root-functions.php:1029
+#: themes/foundation/root-functions.php:1031
 msgid "Load more from this day"
 msgstr ""
 
-#: themes/foundation/root-functions.php:1031
+#: themes/foundation/root-functions.php:1033
 msgid "Load more from this month"
 msgstr ""
 
-#: themes/foundation/root-functions.php:1033
+#: themes/foundation/root-functions.php:1035
 msgid "Load more from this year"
 msgstr ""
 
-#: themes/foundation/root-functions.php:1035
+#: themes/foundation/root-functions.php:1037
 msgid "Load more in this section"
 msgstr ""
 
-#: themes/foundation/root-functions.php:1037
+#: themes/foundation/root-functions.php:1039
 msgid "Load more entries"
 msgstr ""
 
-#: themes/foundation/root-functions.php:1300
+#: themes/foundation/root-functions.php:1302
 msgid "Post"
 msgstr ""
 
-#: themes/foundation/root-functions.php:1302
+#: themes/foundation/root-functions.php:1304
 msgid "Page"
 msgstr ""
 
@@ -2533,9 +2533,9 @@ msgstr ""
 msgid "WPtouch Mobile Plugin"
 msgstr ""
 
-#. #-#-#-#-#  wptouch.pot (WPtouch Mobile Plugin 4.3.26)  #-#-#-#-#
+#. #-#-#-#-#  wptouch.pot (WPtouch Mobile Plugin 4.3.36)  #-#-#-#-#
 #. Plugin URI of the plugin/theme
-#. #-#-#-#-#  wptouch.pot (WPtouch Mobile Plugin 4.3.26)  #-#-#-#-#
+#. #-#-#-#-#  wptouch.pot (WPtouch Mobile Plugin 4.3.36)  #-#-#-#-#
 #. Author URI of the plugin/theme
 msgid "http://www.wptouch.com/"
 msgstr ""

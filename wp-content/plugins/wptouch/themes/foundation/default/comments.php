@@ -72,6 +72,8 @@
 
 			<p><textarea name="comment" id="comment"></textarea></p>
 
+			<?php foundation_output_comment_form_cookie_consent_checkbox(); ?>
+
 			<?php do_action( 'comment_form', $post->ID ); ?>
 
 			<p><button name="submit" type="submit" id="submit"><?php _e( 'Publish', 'wptouch-pro' ); ?></button></p>

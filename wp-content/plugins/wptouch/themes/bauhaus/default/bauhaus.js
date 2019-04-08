@@ -7,7 +7,6 @@ function doBauhausReady() {
 	bauhausBindTappableLinks();
 	bauhausSearchToggle();
 	bauhausWebAppMenu();
-	bauhausVideoUnwrap();
 	bauhausHandleSearch();
 	bauhausHandlePostImgs();
 	bauhausFlickity();
@@ -60,14 +59,6 @@ function bauhausWebAppMenu(){
 			}
 		}).resize();
 	}
-}
-
-// Unwrap video & photo from p tags, allows full-width display
-function bauhausVideoUnwrap(){
-	var pTags = jQuery( '.fluid-width-video-wrapper, iframe, video' );
-	if ( pTags.parent().is( 'p' ) ) {
-		pTags.unwrap();
-	  }
 }
 
 function bauhausHandlePostImgs(){

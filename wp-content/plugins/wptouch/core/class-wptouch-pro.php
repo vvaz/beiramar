@@ -1142,6 +1142,11 @@ class WPtouchProFour {
 		// Settings are reloaded inside this function since themes can augment the user-agent data
 		$this->is_mobile_device = apply_filters( 'wptouch_force_mobile_device', $this->is_supported_device() );
 
+		// Check for Kinsta.com manage hosting mu-plugin file. If found, add in some constants for them so WPtouch works with their caching.
+		if ( file_exists( trailingslashit( WP_CONTENT_DIR ) . 'mu-plugins/kinsta-mu-plugins.php' ) ) {
+			$this->is_mobile_device = ( 'KINSTAWP_MOBILE' === $_SERVER['KINSTA_CACHE_ZONE'] ) ? true : false;
+		}
+
 		// We can have a mobile device detected, but not show the mobile theme
 		// usually this is a result of the user manually disabling it via a link in the footer
 		if ( $this->is_mobile_device ) {

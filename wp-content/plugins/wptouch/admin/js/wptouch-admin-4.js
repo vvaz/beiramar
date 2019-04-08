@@ -875,8 +875,8 @@ function wptouchTriggerSave( callback ) {
 
 			if ( typeof( callback ) !== 'undefined' ) {
 				callback();
-			return false;
-	};
+				return false;
+			}
 		},
 		cache: false
 	});
