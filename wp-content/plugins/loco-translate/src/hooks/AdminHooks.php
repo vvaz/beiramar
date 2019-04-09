@@ -19,7 +19,6 @@ class Loco_hooks_AdminHooks extends Loco_hooks_Hookable {
     }
 
 
-
     /**
      * {@inheritdoc}
      */
@@ -55,7 +54,25 @@ class Loco_hooks_AdminHooks extends Loco_hooks_Hookable {
     }
 
 
+	/**
+	 * "admin_init" callback.
+	 */
+    public function on_admin_init(){
+    	// currently no better hook than `admin_init` for adding privacy statement.
+	    // could use "load-tools.php" action, but WordPress could change that in future.
+	    // this should fire just before WP_Privacy_Policy_Content::privacy_policy_guide is called
+	    if( function_exists('wp_add_privacy_policy_content') ) {
+	    	$url = apply_filters('loco_external','https://localise.biz/wordpress/plugin/privacy');
+		    wp_add_privacy_policy_content(
+		    	__('Loco Translate','loco-translate'),
+			    esc_html( __("This plugin doesn't collect any data from public website visitors.",'loco-translate') ).'<br />'.
+			    sprintf( __('Administrators and auditors may wish to review Loco\'s <a href="%s">plugin privacy notice</a>.','loco-translate'), esc_url($url) )
+		    );
+	    }
+    }
 
+
+    
     /**
      * "admin_menu" callback.
      */
@@ -70,13 +87,16 @@ class Loco_hooks_AdminHooks extends Loco_hooks_Hookable {
     }
 
 
-
     /**
      * plugin_action_links action callback
      */
     public function on_plugin_action_links( $links, $plugin = '' ){
          try {
              if( $plugin && current_user_can('loco_admin') && Loco_package_Plugin::get_plugin($plugin) ){
+                // coerce links to array
+                if( ! is_array($links) ){
+                    $links = $links && is_string($links) ? (array) $links : array();
+                }
                 // ok to add "translate" link into meta row
                 $href = Loco_mvc_AdminRouter::generate('plugin-view', array( 'bundle' => $plugin) );
                 $links[] = '<a href="'.esc_attr($href).'">'.esc_html__('Translate','loco-translate').'</a>';

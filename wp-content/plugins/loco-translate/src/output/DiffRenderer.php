@@ -5,12 +5,10 @@ require_once ABSPATH . WPINC . '/Text/Diff/Renderer.php';
 require_once ABSPATH . WPINC . '/Text/Diff/Renderer/inline.php';
 require_once ABSPATH . WPINC . '/wp-diff.php';
 
-
 /**
  * Diff renderer extending that which WordPress uses for post revisions.
  */
 class Loco_output_DiffRenderer extends WP_Text_Diff_Renderer_Table {
-
 
     /**
      * {@inheritdoc}
@@ -22,7 +20,6 @@ class Loco_output_DiffRenderer extends WP_Text_Diff_Renderer_Table {
             'trailing_context_lines' => 1,
         ) );
     }
-
 
 
     /**
@@ -38,11 +35,10 @@ class Loco_output_DiffRenderer extends WP_Text_Diff_Renderer_Table {
         // like wp_text_diff but avoiding whitespace normalization
         // uses deprecated signature for 'auto' in case of old WordPress
         return $this->render( new Text_Diff (
-            preg_split( '/\\R/u', loco_ensure_utf8( $lhs->getContents() ) ),
-            preg_split( '/\\R/u', loco_ensure_utf8( $rhs->getContents() ) )
+            preg_split( '/(?:\\n|\\r\\n?)/', Loco_gettext_Data::ensureUtf8( $lhs->getContents() ) ),
+            preg_split( '/(?:\\n|\\r\\n?)/', Loco_gettext_Data::ensureUtf8( $rhs->getContents() ) )
         ) );
     }
-
 
 
     /**
@@ -53,7 +49,6 @@ class Loco_output_DiffRenderer extends WP_Text_Diff_Renderer_Table {
     }
 
 
-
     /**
      * {@inheritdoc}
      */
@@ -62,14 +57,12 @@ class Loco_output_DiffRenderer extends WP_Text_Diff_Renderer_Table {
     }
 
 
-
     /**
      * {@inheritdoc}
      */
     public function _startBlock( $header ) {
         return '<tbody data-diff="'.esc_attr($header)."\">\n";
     }
-
 
 
     /**
