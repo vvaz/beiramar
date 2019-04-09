@@ -64,6 +64,7 @@ final class NF_Display_Render
                 $name,
                 array(
                     'changeEmailErrorMsg',
+                    'changeDateErrorMsg',
                     'confirmFieldErrorMsg',
                     'fieldNumberNumMinError',
                     'fieldNumberNumMaxError',
@@ -106,6 +107,20 @@ final class NF_Display_Render
                 return;
             }
         }
+
+        // Get our maintenance value out of the DB.
+        $maintenance = WPN_Helper::form_in_maintenance( $form_id );
+
+        // If maintenance isn't empty and the bool is set to 1 then..
+        if( true == $maintenance ) {
+            // Set a filterable maintenance message and echo it out.
+            $maintenance_msg = apply_filters( 'nf_maintenance_message', __( 'This form is currently undergoing maintenance. Please try again later.', 'ninja-forms' ) );
+            echo $maintenance_msg;
+
+            // bail.
+            return false;
+        }
+
 
         if( ! apply_filters( 'ninja_forms_display_show_form', true, $form_id, $form ) ) return;
 
@@ -331,7 +346,7 @@ final class NF_Display_Render
             }
 
             if( $cache_updated ) {
-                update_option('nf_form_' . $form_id, $form_cache); // Update form cache without duplicate fields.
+                WPN_Helper::update_nf_cache( $form_id, $form_cache ); // Update form cache without duplicate fields.
             }
         }
 

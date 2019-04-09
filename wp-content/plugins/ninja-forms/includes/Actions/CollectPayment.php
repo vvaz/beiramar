@@ -78,33 +78,11 @@ final class NF_Actions_CollectPayment extends NF_Abstracts_Action
 
         $payment_gateway_class = $this->payment_gateways[ $payment_gateway ];
 
-        /*
-         * Get our payment total if we have old data. (not used in current version)
-         *
-         * If we have selected "Calc" as our total type, then we want to use payment_total_calc
-         *
-         * If we have selected "Field" as our total type, then we want to use payment_total_field
-         *
-         * If we have selected "Custom" as our total type, then we want to use payment_total_custom
-         */
-        $total_type = isset( $action_settings[ 'payment_total_type' ] ) ? $action_settings[ 'payment_total_type' ] : 'payment_total_custom';
+        $handler = NF_Handlers_LocaleNumberFormatting::create();
+        $converted = $handler->locale_decode_number( $action_settings['payment_total'] );
+        $action_settings['payment_total'] = $converted;
 
-        switch ( $total_type ) {
-            case 'calculation':
-                $payment_total = $action_settings[ 'payment_total_calc' ];
-                break;
-            case 'field':
-                $payment_total = $action_settings[ 'payment_total_field' ];
-                break;
-            case 'custom':
-                $payment_total = $action_settings[ 'payment_total_custom' ];
-                break;
-            default:
-                $payment_total = $action_settings[ 'payment_total_custom' ];
-                break;
-        }
-
-        return $payment_gateway_class->process( $action_settings, $form_id, $data, $payment_total );
+        return $payment_gateway_class->process( $action_settings, $form_id, $data );
     }
 
     public function register_payment_gateways()

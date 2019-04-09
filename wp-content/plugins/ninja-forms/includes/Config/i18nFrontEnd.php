@@ -8,6 +8,7 @@ return apply_filters( 'ninja_forms_i18n_front_end', array(
 
     'ninjaForms'                            => __( 'Ninja Forms', 'ninja-forms' ),
     'changeEmailErrorMsg'                   => __( 'Please enter a valid email address!', 'ninja-forms' ),
+    'changeDateErrorMsg'                   => __( 'Please enter a valid date!', 'ninja-forms' ),
     'confirmFieldErrorMsg'                  => __( 'These fields must match!', 'ninja-forms' ),
     'fieldNumberNumMinError'                => __( 'Number Min Error', 'ninja-forms' ),
     'fieldNumberNumMaxError'                => __( 'Number Max Error', 'ninja-forms' ),
@@ -24,6 +25,7 @@ return apply_filters( 'ninja_forms_i18n_front_end', array(
     'fieldsMarkedRequired'                  => sprintf( __( 'Fields marked with an %s*%s are required', 'ninja-forms' ), '<span class="ninja-forms-req-symbol">', '</span>' ),
     'thousands_sep'                         => $wp_locale->number_format[ 'thousands_sep' ],
     'decimal_point'                         => $wp_locale->number_format[ 'decimal_point' ],
+    'siteLocale'                            => get_locale(),
     'dateFormat'                            => $date_format,
     'startOfWeek'                           => get_option( 'start_of_week' ),
     'of'                                    => __( 'of', 'ninja-forms' ),

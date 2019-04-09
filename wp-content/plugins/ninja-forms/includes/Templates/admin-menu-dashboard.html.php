@@ -11,6 +11,7 @@
         </div>
     </header>
     <div class="notices"></div>
+    <div class="promotions"></div>
     <nav class="sections">
         <ul>
             {{{ data.renderNav() }}}
@@ -19,15 +20,93 @@
     <main class="content"></main>
 </script>
 
-<!-- Auth Notice -->
-<script id="tmpl-nf-auth-notice" type="text/template">
-    [AUTH GOES HERE]
-    <div id="auth-notice"></div>
+<!-- OAuth -->
+<script id="tmpl-nf-notices-oauth" type="text/template">
+  <# if( null !== data.connected ) { #>
+    <# if( ! data.connected ){ #>
+    <!-- <a href="{{{ data.connect_url }}}" class="nf-oauth--connect">
+      Connect to My.NinjaForms.com
+    </a> -->
+    <# } else { #>
+    <div class="nf-oauth--connected">
+      Connected to My.NinjaForms.com &nbsp; <span style="cursor:pointer;" onclick="Backbone.Radio.channel( 'dashboard' ).request( 'oauth:learn-more' );">Learn More</span>
+      <span class="js--disconnect" style="float:right;cursor:pointer;">
+        <span class="dashicons dashicons-no"></span>
+      </span>
+    </div>
+    <# } #>
+  <# } else { #>
+    <div class="nf-oauth--checking">
+      Checking connection...
+    </div>
+  <# } #>
+</script>
+
+<!-- Promotion -->
+<script id="tmpl-nf-promotion" type="text/template">
+    <div
+      class="promotion--wrapper"
+      <# if( data.script ){ #>
+      onclick="{{{data.script}}}"
+      <# } #>
+      >
+      <div class="promotion--{{{ data.id }}}">
+        {{{ data.content }}}
+      </div>
+    </div>
 </script>
 
 <!-- Section: Widgets -->
 <script id="tmpl-nf-widgets" type="text/template">
     <div class="widget widget-forms"></div>
+</script>
+
+<!-- Section: Services -->
+<script id="tmpl-nf-services" type="text/template">
+  <div class="services"></div>
+</script>
+<script id="tmpl-nf-service" type="text/template">
+  <div class="nf-box-inside" style="padding:10px 20px;">
+    <h2>{{{ data.name }}}</h2>
+    <div class="nf-extend-content">
+      <p>{{{ data.description }}}</p>
+      <div class="nf-extend-buttons">
+        <# if( data.is_connected ){ #>
+          <# if( null !== data.enabled){ #>
+          <div style="float: left;">
+            <input id="nfServiceTransactionalEmail" class="nf-toggle setting" {{{ ( data.enabled ) ? 'checked="checked"' : '' }}} {{{ ( data.isUpdating ) ? 'disabled="disabled"' : '' }}} type="checkbox">
+            <label for="nfServiceTransactionalEmail"></label>
+          </div>
+          <# } #>
+          <# if( data.serviceLink ){ #>
+            <a
+              href="{{{ data.serviceLink.href }}}"
+              class="{{{data.serviceLink.classes}}}"
+              <# if( data.serviceLink.target ) { #>target="{{{ data.serviceLink.target }}}"<# } #>
+              style="float:right;">{{{data.serviceLink.text}}}</a>
+          <# } #>
+        <# } #>
+        <# if( data.learnMore ) { #>
+        <button class="nf-button secondary js--learn-more" style="float:left;">Learn More</button>
+        <# } #>
+        <# if( ( ! data.is_connected ) || ( data.slug && data.installPath ) ){ #>
+          <# if( ! data.is_installing ){ #>
+            <a href="#services" class="nf-button primary js--install" style="float:right;">
+              <# if( data.setupButtonText ){ #>
+                {{{ data.setupButtonText }}}
+              <# } else { #>
+                <?php echo __( 'Setup', 'ninja-forms' ); ?>
+              <# } #>
+            </a>
+          <# } else { #>
+            <a href="#services" class="nf-button primary" style="float:right;" disabled>
+              <span class="dashicons dashicons-update dashicons-update-spin"></span>
+            </a>
+          <# } #>
+        <# } #>
+      </div>
+    </div>
+  </div>
 </script>
 
 <!-- Section: Apps -->
@@ -40,6 +119,10 @@
 
 <!-- Section: Memberships -->
 <script id="tmpl-nf-memberships" type="text/template">
+    <?php
+        $saved = get_option( 'ninja_forms_memberships_feed', false );
+        if ( ! $saved ) {
+    ?>
     <div class="widget widget-memberships">
         <div class="pricing-container">
             <div class="pricing-block widget">
@@ -54,11 +137,6 @@
                         <i class="fa fa-users" aria-hidden="true"></i>
                         <span class="pricing-body-title"><?php _e( 'Unlimited Sites', 'ninja-forms' ); ?></span>
                         <span><?php _e( 'Updates & Support', 'ninja-forms' ); ?></span>
-                    </div>
-                    <div>
-                        <i class="fa fa-money" aria-hidden="true"></i>
-                        <span class="pricing-body-title"><?php _e( '50% off recurring renewals', 'ninja-forms' ); ?></span>
-                        <span><?php _e( 'Renews at $249.50/year', 'ninja-forms' ); ?></span>
                     </div>
                     <div>
                         <i class="fa fa-rocket" aria-hidden="true"></i>
@@ -97,11 +175,6 @@
                         <span><?php _e( 'Updates & Support', 'ninja-forms' ); ?></span>
                     </div>
                     <div>
-                        <i class="fa fa-money" aria-hidden="true"></i>
-                        <span class="pricing-body-title"><?php _e( '50% off recurring renewals', 'ninja-forms' ); ?></span>
-                        <span><?php _e( 'Renews at $99.50/year', 'ninja-forms' ); ?></span>
-                    </div>
-                    <div>
                         <i class="fa fa-plane" aria-hidden="true"></i>
                         <span class="pricing-body-title"><?php _e( 'Faster Support', 'ninja-forms' ); ?></span>
                     </div>
@@ -130,11 +203,6 @@
                         <span><?php _e( 'Updates & Support', 'ninja-forms' ); ?></span>
                     </div>
                     <div>
-                        <i class="fa fa-money" aria-hidden="true"></i>
-                        <span class="pricing-body-title"><?php _e( '50% off recurring renewals', 'ninja-forms' ); ?></span>
-                        <span><?php _e( 'Renews at $49.50/year', 'ninja-forms' ); ?></span>
-                    </div>
-                    <div>
                         <i class="fa fa-car" aria-hidden="true"></i>
                         <span class="pricing-body-title"><?php _e( 'Fast Support', 'ninja-forms' ); ?></span>
                     </div>
@@ -155,8 +223,46 @@
     <div class="widget widget-plan-notice">
         <p class="widget-title"><?php _e( 'That sounds amazing! What else comes with Ninja Forms?', 'ninja-forms' ); ?></p>
         <a href="https://ninjaforms.com/features/?utm_medium=plugin&utm_source=plugin-dashboard&utm_campaign=Ninja+Forms+Memberships&utm_content=Features" target="_blank" class="nf-button primary feature-list-link"><?php _e( 'We\'re glad you asked! Checkout our full list of features!', 'ninja-forms' ); ?> <i class="fa fa-chevron-circle-right" aria-hidden="true"></i></a>
-        <div><em><?php _e( 'All plans include 50% discount on automatic renewals, and a 14 day money back guarantee.', 'ninja-forms' ); ?></em></div>
+        <div><em><?php _e( 'All plans include a 14 day money back guarantee.', 'ninja-forms' ); ?></em></div>
         <div><?php _e( 'Requires a current active license and subject to our', 'ninja-forms' ); ?> <a target="_blank" href="https://ninjaforms.com/terms-conditions/?utm_medium=plugin&utm_source=plugin-dashboard&utm_campaign=Ninja+Forms+Memberships&utm_content=Terms+Conditions"><?php _e( 'Terms & Conditions', 'ninja-forms' ); ?></a>.</div>
+    </div>
+    <?php
+    } else {
+        echo( $saved );
+    }
+    ?>
+</script>
+
+<!-- Section: Required Updates -->
+<script id="tmpl-nf-requiredUpdates" type="text/template">
+    <div>
+        <h1><?php _e( 'Required Updates', 'ninja-forms' ); ?></h1>
+        <div>
+            <p>
+                <?php _e( "Ninja Forms needs to run some updates on your installation before you can continue. You'll be able to create and edit forms after the updates listed below have completed.", 'ninja-forms' ); ?>
+            </p>
+            <p>
+                <?php _e( "Normally, users will still be able to view and submit forms while these updates take place. If an update needs to modify database information, we'll put the affected form in maintenance mode until we get done with that update.", 'ninja-forms' ); ?>
+            </p>
+            <p>
+                <?php _e( "It's always a good idea to have an up to date backup of your WordPress site on hand. That's especially true when you run plugin and theme updates. Luckily, there are plenty of good backup plugins available.", 'ninja-forms' ); ?>
+            </p>
+            <p>
+                <?php _e( "When you're ready, just click the \"Do Required Updates\" button below to get started. You'll be able to create and edit forms in no time.", 'ninja-forms' ); ?>
+            </p>
+        </div>
+        <div id="nfUpgradeApp">
+            <table id="nf-upgrades-table">
+                <thead>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+        <div>
+            <input class="nf-required-update nf-update-button" type='button' id='nf-required-updates-btn' name='nf-required-updates-btn' value="<?php _e( 'Do Required Updates' ); ?>" />
+        </div>
+        <div class="nf-update-progress jBox-content" id="nf-required-updates-progress"></div>
     </div>
 </script>
 
@@ -229,7 +335,7 @@
 
 <!-- Widget: Forms - New Forms Templates -->
 <script id="tmpl-nf-widget-forms-template" type="text/template">
-    <div class="template">
+    <div class="template {{{ data.type }}}">
         <a href="admin.php?page=ninja-forms&form_id={{{ data.id }}}">
             <strong class="title">{{{ data.title }}}</strong>
             <div class="desc">{{{ data.desc }}}</div>
