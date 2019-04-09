@@ -11,12 +11,29 @@ class MainWP_Client_Report {
 		return MainWP_Client_Report::$instance;
 	}
 
-	public static function init() {
-		add_filter( 'wp_stream_connectors', array( 'MainWP_Client_Report', 'init_stream_connectors' ), 10, 1 );
+	public function init() {
+        add_filter( 'mainwp-site-sync-others-data', array( $this, 'syncOthersData' ), 10, 2 );
+		//add_filter( 'wp_stream_connectors', array( 'MainWP_Client_Report', 'init_stream_connectors' ), 10, 1 );
 		add_filter( 'mainwp_client_reports_connectors', array( 'MainWP_Client_Report', 'init_report_connectors' ), 10, 1 );
 		add_action( 'mainwp_child_log', array( 'MainWP_Client_Report', 'do_reports_log' ) );
 	}
 
+    // ok
+    public function syncOthersData( $information, $data = array() ) {
+        if ( isset( $data['syncClientReportData'] ) && $data['syncClientReportData'] ) {
+            $creport_sync_data = array();
+            if ( ( $firsttime = get_option( 'mainwp_creport_first_time_activated' ) ) !== false ) {
+                $creport_sync_data['firsttime_activated'] = $firsttime;
+            }
+            if ( !empty( $creport_sync_data ) ) {
+                $information['syncClientReportData'] =  $creport_sync_data;
+            }
+        }
+		return $information;
+	}
+
+
+    // not used
 	public static function init_stream_connectors( $classes ) {
 		$connectors = array(
 			'Backups',
@@ -71,9 +88,9 @@ class MainWP_Client_Report {
 			case 'wordfence':
 				MainWP_Child_Wordfence::Instance()->do_reports_log( $ext );
 				break;
-//            case 'wptimecapsule':
-//                MainWP_Child_WP_Time_Capsule::Instance()->do_reports_log( $ext );
-//                break;
+            case 'wptimecapsule':
+				MainWP_Child_Timecapsule::Instance()->do_reports_log( $ext );
+				break;
 		}
 	}
 
@@ -240,7 +257,7 @@ class MainWP_Client_Report {
 			$args['date_to'] = date( 'Y-m-d H:i:s', $args['date_to'] );
 		}
 
-		if ( MainWP_Child_Branding::is_branding() ) {
+		if ( MainWP_Child_Branding::Instance()->is_branding() ) {
 			$args['hide_child_reports'] = 1;
 		}
 
@@ -300,6 +317,8 @@ class MainWP_Client_Report {
 
 	function get_other_tokens_data( $records, $tokens, &$skip_records ) {
 
+        // convert context name of tokens to context name saved in child report
+        // some context are not difference
 		$convert_context_name = array(
 			'comment' => 'comments',
 			'plugin'  => 'plugins',
@@ -364,7 +383,7 @@ class MainWP_Client_Report {
 									continue;
 								}
 							} else if ( 'mainwp_backups' === $context ) {
-								if ( $record->context !== 'mainwp_backups' && $record->context !== 'backwpup_backups' &&  $record->context !== 'updraftplus_backups' && $record->context !== 'backupwordpress_backups' && $record->context !== 'backupbuddy_backups' ) {
+								if ( $record->context !== 'mainwp_backups' && $record->context !== 'backwpup_backups' &&  $record->context !== 'updraftplus_backups' && $record->context !== 'backupwordpress_backups' && $record->context !== 'backupbuddy_backups'  && $record->context !== 'wptimecapsule_backups') {
 									continue;
 								}
 							} else if ( 'mainwp_sucuri' === $context ) {
@@ -423,6 +442,19 @@ class MainWP_Client_Report {
 									}
 								}
 
+                                // to avoid WC order_note, action_log
+                                if ( 'comments' === $context ) {
+                                    if ( isset( $record->meta ) ) {
+                                        if ( isset( $record->meta[ 'comment_type' ] ) && is_array($record->meta[ 'comment_type' ])) {
+                                            $cmtype = current($record->meta[ 'comment_type' ]);
+                                            if ( $cmtype == 'order_note' || $cmtype == 'action_log') {
+                                                continue;
+                                            }
+                                        }
+                                    }
+                                }
+
+
 							}
 
 							$count ++;
@@ -460,19 +492,19 @@ class MainWP_Client_Report {
 			'backup'   => 'mainwp_backup',
 		);
 
-		$some_allowed_data = array(
-			'ID',
-			'name',
-			'title',
-			'oldversion',
-			'currentversion',
-			'date',
-			'time',
-			'count',
-			'author',
-			'old.version',
-			'current.version',
-		);
+//		$some_allowed_data = array(
+//			'ID',
+//			'name',
+//			'title',
+//			'oldversion',
+//			'currentversion',
+//			'date',
+//			'time',
+//			'count',
+//			'author',
+//			'old.version',
+//			'current.version',
+//		);
 
 		$context   = $action = '';
 		$str_tmp   = str_replace( array( '[', ']' ), '', $section );
@@ -559,6 +591,18 @@ class MainWP_Client_Report {
 					}
 				}
 			}
+
+            // to avoid WC order_note, action_log
+            if ( 'comments' === $context ) {
+                if ( isset( $record->meta ) ) {
+                    if ( isset( $record->meta[ 'comment_type' ] ) && is_array($record->meta[ 'comment_type' ])) {
+                        $cmtype = current($record->meta[ 'comment_type' ]);
+                        if ( $cmtype == 'order_note' || $cmtype == 'action_log') {
+                            continue;
+                        }
+                    }
+                }
+            }
 
 			$token_values = array();
 
@@ -656,28 +700,28 @@ class MainWP_Client_Report {
 					case 'status':   // sucuri cases
 					case 'webtrust':
 						if ( 'mainwp_sucuri' === $context ) {
-                            
+
                             $scan_data = $this->get_stream_meta_data( $record, 'scan_data' );
                             if (!empty($scan_data)) {
-                                $scan_data  = maybe_unserialize( base64_decode( $scan_data ) );                              
+                                $scan_data  = maybe_unserialize( base64_decode( $scan_data ) );
                                 if ( is_array( $scan_data ) ) {
-                                    
+
                                     $blacklisted = $scan_data['blacklisted'];
                                     $malware_exists = $scan_data['malware_exists'];
-                                   
+
                                     $status = array();
                                     if ( $blacklisted ) {
                                         $status[] = __( 'Site Blacklisted', 'mainwp-child' ); }
                                     if ( $malware_exists ) {
                                         $status[] = __( 'Site With Warnings', 'mainwp-child' ); }
-                                    
+
                                     if ($data == 'status') {
                                         $token_values[$token] = count( $status ) > 0 ? implode( ', ', $status ) : __( 'Verified Clear', 'mainwp-child' );
                                     } else if ($data == 'webtrust') {
                                         $token_values[$token] = $blacklisted ? __( 'Site Blacklisted', 'mainwp-child' ) : __( 'Trusted', 'mainwp-child' );
-                                    }                                    
-                                }   
-                                
+                                    }
+                                }
+
                             } else {
                                 $token_values[ $token ] = $this->get_stream_meta_data( $record, $data );
                             }
@@ -688,7 +732,20 @@ class MainWP_Client_Report {
 					case 'details':
 					case 'result':
 						if ( 'wordfence' === $context || 'maintenance' === $context ) {
-							$token_values[ $token ] = $this->get_stream_meta_data( $record, $data );
+                            $meta_value  = $this->get_stream_meta_data( $record, $data );
+                            // to fix
+                            if ('wordfence' === $context && $data == 'result') {
+                                // SUM_FINAL:Scan complete. You have xxx new issues to fix. See below.
+                                // SUM_FINAL:Scan complete. Congratulations, no new problems found
+                                if (stripos($meta_value, 'Congratulations')) {
+                                    $meta_value = 'No issues detected';
+                                } else if (stripos($meta_value, 'You have')) {
+                                    $meta_value = 'Issues Detected';
+                                } else {
+                                    $meta_value = '';
+                                }
+                            }
+							$token_values[ $token ] = $meta_value;
 						}
 						break;
 					case 'destination':   // backup cases
@@ -730,7 +787,21 @@ class MainWP_Client_Report {
 				$value = current( $value );
 				if ( 'author_meta' === $meta_key || 'user_meta' === $meta_key ) {
 					$value = maybe_unserialize( $value );
-					$value = $value['display_name'];
+                    $value = $value['display_name'];
+
+                    if ( 'author_meta' === $meta_key && $value == '' && $context == 'comments') {
+                        $value = __( 'Guest', 'mainwp-child-reports' );
+                    }
+                    // to fix empty author value
+                    if ( empty($value) ) {
+                        if (isset($value['agent']) && !empty($value['agent'])) {
+                            $value = $value['agent'];
+                        }
+                    }
+
+                    if (!is_string($value)) {
+                        $value = '';
+                    }
 				}
 			}
 		}
@@ -739,30 +810,53 @@ class MainWP_Client_Report {
 	}
 
 	function set_showhide() {
-		MainWP_Helper::update_option( 'mainwp_creport_ext_branding_enabled', 'Y', 'yes' );
-		$hide = isset( $_POST['showhide'] ) && ( 'hide' === $_POST['showhide'] ) ? 'hide' : '';
-		MainWP_Helper::update_option( 'mainwp_creport_branding_stream_hide', $hide, 'yes' );
+        $hide = isset( $_POST['showhide'] ) && ( 'hide' === $_POST['showhide'] ) ? 'hide' : '';
+        MainWP_Child_Branding::Instance()->save_branding_options('hide_child_reports', $hide);
+        MainWP_Helper::update_option( 'mainwp_creport_branding_stream_hide', $hide, 'yes' ); // to compatible with old child reports
 		$information['result'] = 'SUCCESS';
 
-		return $information;
+        return $information;
 	}
 
 	public function creport_init() {
-		if ( get_option( 'mainwp_creport_ext_branding_enabled' ) !== 'Y' ) {
-			return;
-		}
 
-		if ( get_option( 'mainwp_creport_branding_stream_hide' ) === 'hide' ) {
-			add_filter( 'all_plugins', array( $this, 'creport_branding_plugin' ) );
-			add_action( 'admin_menu', array( $this, 'creport_remove_menu' ) );
-			add_filter( 'site_transient_update_plugins', array( &$this, 'remove_update_nag' ) );
-		}
+        $branding_opts = MainWP_Child_Branding::Instance()->get_branding_options();
+        $hide_nag = false;
+
+        // check setting of 'hide_child_reports'
+        if ( isset($branding_opts['hide_child_reports']) && $branding_opts['hide_child_reports'] == 'hide' ) {
+            add_filter( 'all_plugins', array( $this, 'creport_branding_plugin' ) );
+            add_action( 'admin_menu', array( $this, 'creport_remove_menu' ) );
+            $hide_nag = true;
+        }
+
+        if ( ! $hide_nag ) {
+            // check child branding settings
+            if ( MainWP_Child_Branding::Instance()->is_branding() ) {
+                $hide_nag = true;
+            }
+        }
+
+        if ($hide_nag) {
+            add_filter( 'site_transient_update_plugins', array( &$this, 'remove_update_nag' ) );
+            add_filter( 'mainwp_child_hide_update_notice', array( &$this, 'hide_update_notice' ) );
+        }
 	}
 
+    function hide_update_notice( $slugs ) {
+        $slugs[] = 'mainwp-child-reports/mainwp-child-reports.php';
+        return $slugs;
+    }
+
 	function remove_update_nag( $value ) {
-		if ( isset( $_POST['mainwpsignature'] ) ) {
+        if ( isset( $_POST['mainwpsignature'] ) ) {
 			return $value;
 		}
+
+        if (! MainWP_Helper::is_screen_with_update()) {
+            return $value;
+        }
+
 		if ( isset( $value->response['mainwp-child-reports/mainwp-child-reports.php'] ) ) {
 			unset( $value->response['mainwp-child-reports/mainwp-child-reports.php'] );
 		}

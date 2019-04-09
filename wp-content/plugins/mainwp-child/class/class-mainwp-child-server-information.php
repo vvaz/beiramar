@@ -22,9 +22,9 @@ class MainWP_Child_Server_Information {
                             if (isset($_POST['warnings']))
                                 $warnings = intval($_POST['warnings']);
                             else
-                                $warnings = self::getWarnings();                            
+                                $warnings = self::getWarnings();
                             $dismissWarnings['warnings'] = $warnings;
-			}                        
+			}
 			MainWP_Helper::update_option( 'mainwp_child_dismiss_warnings', $dismissWarnings );
 		}
 	}
@@ -66,7 +66,7 @@ class MainWP_Child_Server_Information {
 				var data = {
 					action: 'mainwp-child_dismiss_warnings',
 					what: pAction,
-                                        warnings: <?php echo intval($warnings); ?>
+                    warnings: <?php echo intval($warnings); ?>
 				};
 
 				jQuery.ajax( {
@@ -537,11 +537,11 @@ class MainWP_Child_Server_Information {
 	}
 
 	public static function render() {
-		$branding_title = 'MainWP Child';
-        $isBranding = false;
-		if ( MainWP_Child_Branding::is_branding() ) {
-			$branding_title = MainWP_Child_Branding::get_branding();
-            $isBranding = true;
+        $branding_title = MainWP_Child_Branding::Instance()->get_branding_title();
+        $isBranding = true;
+		if ( $branding_title == '' ) {
+            $branding_title = 'MainWP Child';
+            $isBranding = false;
 		}
 
 		?>
@@ -956,10 +956,10 @@ class MainWP_Child_Server_Information {
 	}
 
 	protected static function checkDirectoryMainWPDirectory( $write = true ) {
-		$branding_title = 'MainWP';
-		if ( MainWP_Child_Branding::is_branding() ) {
-			$branding_title = MainWP_Child_Branding::get_branding();
-		}
+        $branding_title = MainWP_Child_Branding::Instance()->get_branding_title();
+        if ($branding_title == '')
+            $branding_title = 'MainWP';
+
 		$branding_title .= ' Upload Directory';
 
 		try {
@@ -1009,7 +1009,7 @@ class MainWP_Child_Server_Information {
 		?>
 		<tr class="mwp-not-generate-row">
 			<td></td>
-			<td><?php echo esc_html( stripslashes( $pName ) ); ?><br/><?php echo esc_html( ( MainWP_Child_Branding::is_branding() ) ? '' : $pDirectory ); ?>
+			<td><?php echo esc_html( stripslashes( $pName ) ); ?><br/><?php echo esc_html( ( MainWP_Child_Branding::Instance()->is_branding() ) ? '' : $pDirectory ); ?>
 			</td>
 			<td><?php echo esc_html( $pCheck ); ?></td>
 			<td><?php echo esc_html( $pResult ); ?></td>
@@ -1123,7 +1123,7 @@ class MainWP_Child_Server_Information {
 	}
 
 	protected static function getSSLWarning() {
-		$conf = array( 'private_key_bits' => 384 );
+		$conf = array( 'private_key_bits' => 2048 );
 		$str = '';
 		if ( function_exists( 'openssl_pkey_new' ) ) {
 			$res  = @openssl_pkey_new( $conf );
@@ -1250,7 +1250,8 @@ class MainWP_Child_Server_Information {
 	}
 
 	protected static function getServerGetawayInterface() {
-		echo esc_html( $_SERVER['GATEWAY_INTERFACE'] );
+        $gate = isset($_SERVER['GATEWAY_INTERFACE']) ? $_SERVER['GATEWAY_INTERFACE'] : '';
+		echo esc_html( $gate );
 	}
 
 	public static function getServerIP() {
@@ -1415,7 +1416,7 @@ class MainWP_Child_Server_Information {
 
 
 	/*
-    *Plugin Name: Error Log Dashboard Widget
+    *Plugin-Name: Error Log Dashboard Widget
     *Plugin URI: http://wordpress.org/extend/plugins/error-log-dashboard-widget/
     *Description: Robust zero-configuration and low-memory way to keep an eye on error log.
     *Author: Andrey "Rarst" Savchenko
@@ -1466,14 +1467,12 @@ class MainWP_Child_Server_Information {
 		$lines = array_filter( $lines );
 
 		if ( empty( $lines ) ) {
-            if ( MainWP_Child_Branding::is_branding() ) {
-	            $branding_title = MainWP_Child_Branding::get_branding();
-	            $msg = esc_html( stripslashes( $branding_title ) ) . ' is unable to find your error logs, please contact your host for server error logs.';
-            } else {
-                $msg = esc_html__( 'MainWP is unable to find your error logs, please contact your host for server error logs.', 'mainwp-child' );
+            $branding_title = MainWP_Child_Branding::Instance()->get_branding_title();
+            if ($branding_title == '') {
+                $branding_title = 'MainWP';
             }
+            $msg = esc_html( stripslashes( $branding_title ) ) . ' is unable to find your error logs, please contact your host for server error logs.';
 			echo '<tr><td colspan="2">' . $msg  . '</td></tr>';
-
 			return;
 		}
 
@@ -1618,20 +1617,19 @@ class MainWP_Child_Server_Information {
 		</div>
 		<?php
 	}
-        
+
         public static function renderConnectionDetails() {
-            $branding_title = 'MainWP';
-            if ( MainWP_Child_Branding::is_branding() ) {
-	            $branding_title = MainWP_Child_Branding::get_branding();
-            }
-            
+            $branding_title = MainWP_Child_Branding::Instance()->get_branding_title();
+            if ($branding_title == '')
+                $branding_title = 'MainWP';
+
             global $current_user;
 	        $uniqueId = get_option('mainwp_child_uniqueId');
             $details = array(
                 'siteurl' => array(
                                 'title' => __('Site URL', 'mainwp-child'),
                                 'value' => get_bloginfo( 'url' ),
-                                'desc' => get_bloginfo( 'url' )                            
+                                'desc' => get_bloginfo( 'url' )
                             ),
                 'adminuser' => array(
                                 'title' => __('Administrator name', 'mainwp-child'),
@@ -1656,7 +1654,7 @@ class MainWP_Child_Server_Information {
                 'ssl_version' => array(
                                 'title' => __('SSL version', 'mainwp-child'),
                                 'value' => __('Auto Detect', 'mainwp-child'),
-                                'desc' => __('Auto Detect', 'mainwp-child'),                            
+                                'desc' => __('Auto Detect', 'mainwp-child'),
                             ),
 
             );
@@ -1671,7 +1669,7 @@ class MainWP_Child_Server_Information {
                             </div>
                             <table id="mainwp-table" class="wp-list-table widefat" cellspacing="0" style="border: 0">
                                 <tbody>
-                                    <?php                            
+                                    <?php
                                         foreach ($details as $row) {
                                         ?>
                                             <tr>
@@ -1680,13 +1678,13 @@ class MainWP_Child_Server_Information {
                                                 <td><?php echo $row['desc']; ?></td>
                                             </tr>
                                         <?php
-                                        }                            
-                                    ?>                                    	
+                                        }
+                                    ?>
                                 </tbody>
                             </table>
 			</div>
 		</div>
 		<?php
 	}
-        
+
 }
