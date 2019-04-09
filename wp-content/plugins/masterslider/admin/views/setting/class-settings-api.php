@@ -111,13 +111,16 @@ class WeDevs_Settings_API {
                 add_option( $section['id'] );
             }
 
-            if ( isset($section['desc']) && !empty($section['desc']) ) {
-                $section['desc'] = '<div class="inside">'.$section['desc'].'</div>';
-                $callback = create_function('', 'echo "'.str_replace('"', '\"', $section['desc']).'<br />";');
+            if ( isset( $section['desc'] ) && !empty( $section['desc'] ) ) {
+                $section['desc'] = '<div class="inside">' . $section['desc'] . '</div>';
+                $callback = function() use ( $section ) {
+                    echo str_replace( '"', '\"', $section['desc'] );
+                };
+            } else if ( isset( $section['callback'] ) ) {
+                $callback = $section['callback'];
             } else {
-                $callback = '__return_false';
+                $callback = null;
             }
-
             add_settings_section( $section['id'], $section['title'], $callback, $section['id'] );
         }
 
@@ -354,21 +357,24 @@ class WeDevs_Settings_API {
      * Sanitize callback for Settings API
      */
     function sanitize_options( $options ) {
-        foreach( $options as $option_slug => $option_value ) {
-            $sanitize_callback = $this->get_sanitize_callback( $option_slug );
+        if( is_array( $options ) ){
+            foreach( $options as $option_slug => $option_value ) {
+                $sanitize_callback = $this->get_sanitize_callback( $option_slug );
 
-            // If callback is set, call it
-            if ( $sanitize_callback ) {
-                $options[ $option_slug ] = call_user_func( $sanitize_callback, $option_value );
-                continue;
-            }
+                // If callback is set, call it
+                if ( $sanitize_callback ) {
+                    $options[ $option_slug ] = call_user_func( $sanitize_callback, $option_value );
+                    continue;
+                }
 
-            // Treat everything that's not an array as a string
-            if ( !is_array( $option_value ) ) {
-                $options[ $option_slug ] = sanitize_text_field( $option_value );
-                continue;
+                // Treat everything that's not an array as a string
+                if ( !is_array( $option_value ) ) {
+                    $options[ $option_slug ] = sanitize_text_field( $option_value );
+                    continue;
+                }
             }
         }
+        
         return $options;
     }
 
@@ -448,7 +454,7 @@ class WeDevs_Settings_API {
 
                     <div style="padding-left: 10px; padding-top:15px;">
                         <?php // get_submit_button returns a submit button, with provided text and appropriate class
-                            $button_markup = get_submit_button(); 
+                            $button_markup = get_submit_button();
                             $button_markup = apply_filters( 'axiom_wedev_setting_section_submit_button', $button_markup, $form );
                             echo $button_markup;
                         ?>

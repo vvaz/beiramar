@@ -194,14 +194,72 @@ function msp_get_skins(){
         array( 'class' => 'ms-skin-black-1' , 'label' => 'Black 1' ),
         array( 'class' => 'ms-skin-black-2' , 'label' => 'Black 2' ),
         array( 'class' => 'ms-skin-black-2 round-skin', 'label' => 'Black 2 Round' ),
-        array( 'class' => 'ms-skin-metro'   , 'label' => 'Metro' )
+        array( 'class' => 'ms-skin-metro'   , 'label' => 'Metro' ),
+        array( 'class' => 'ms-skin-minimal' , 'label' => 'Minimal' )
     );
 
 	return apply_filters( 'masterslider_skins', $slider_skins );
 }
 
 
+function msp_unlock_conditions() {
+    // Phlox Unlock
+    return msp_is_item_purchased( '3909293', 'themes' ) ? true : false;
+}
 
+function msp_get_envato_purchased_items( $type ){
+
+    if( ! auxin_is_plugin_active( 'envato-market/envato-market.php' ) || ! function_exists( 'envato_market' ) ){
+        return false;
+    }
+
+    if ( false === ( $output = get_site_transient( envato_market()->get_option_name() . '_' . $type ) ) ) {
+        // Remove 's' from end of type string
+        if ( substr( $type, -1 ) == 's' ) {
+            $item_type = substr( $type, 0, -1 );
+        }
+
+        $output = envato_market()->api()->$type();
+        $items  = envato_market()->get_option( 'items', array() );
+        foreach (  $items as $item ) {
+            if ( empty( $item ) ) {
+                continue;
+            }
+            if ( $item_type === $item['type'] ) {
+                $request_args = array(
+                    'headers' => array(
+                        'Authorization' => 'Bearer ' . $item['token'],
+                    ),
+                );
+                $request = envato_market()->api()->item( $item['id'], $request_args );
+                if ( false !== $request ) {
+                    $output[] = $request;
+                }
+            }
+        }
+
+        set_site_transient( envato_market()->get_option_name() . '_' . $type, $output, HOUR_IN_SECONDS );
+    }
+
+    return isset( $output['purchased'] ) ? $output['purchased'] : false;
+}
+
+function msp_is_item_purchased( $id, $type ){
+    // Get purchased items list
+    $items = msp_get_envato_purchased_items( $type );
+
+    if( is_array( $items ) ){
+        foreach ( $items as $key => $value ) {
+            if( $value['id'] == $id ){
+                return true;
+            }
+        }
+    } elseif( defined('THEME_PRO') && THEME_PRO && ( defined('THEME_ID') && 'phlox-pro' === THEME_ID ) ){
+        return true;
+    }
+
+    return false;
+}
 
 /**
  * Prints Pretty human-readable information about a variable (developer debug tool)
@@ -218,7 +276,7 @@ if ( ! function_exists( 'axpp' ) ) {
 		} elseif ( $dump ) {
 			echo '<pre>'; var_dump( $expression ); echo '</pre>';
 		} else {
-			echo '<pre>'; print_r ( $expression ); echo '</pre>';
+			echo '<pre style="margin-left:170px;">'; print_r ( $expression ); echo '</pre>';
 		}
 		return true;
 	}

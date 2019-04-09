@@ -196,8 +196,8 @@ class MSP_WP_Post {
 		$tax_term_archive = array();
 
 		foreach ( $taxs_term_ids as $tax_id ) {
-			$the_tax_term_obj = $this->get_taxonomy_by_id( $tax_id );
-			$tax_term_archive[ $the_tax_term_obj->taxonomy ][] = $the_tax_term_obj->term_id;
+			if( $the_tax_term_obj = $this->get_taxonomy_by_id( $tax_id ) )
+    			$tax_term_archive[ $the_tax_term_obj->taxonomy ][] = $the_tax_term_obj->term_id;
 		}
 
 		// generate tax_query
@@ -247,7 +247,7 @@ class MSP_WP_Post {
 				$the_excerpt = msp_get_trimmed_string( get_the_excerpt(), (int)$excerpt_length );
 
 			$the_media     = '';
-			$the_media_src = msp_get_auto_post_thumbnail_src( $th_wp_query->post->ID, $slide_image_target );
+			$the_media_src = msp_get_auto_post_thumbnail_url( $th_wp_query->post->ID, $slide_image_target );
 
 			if( ! empty( $the_media_src ) ) {
 				$the_media_tag  = msp_get_the_resized_image( $the_media_src, 80, 80, true, 100 );

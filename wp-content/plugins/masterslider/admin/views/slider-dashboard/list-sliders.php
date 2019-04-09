@@ -1,5 +1,6 @@
 <?php
-    msp_get_panel_header();
+
+    do_action( 'masterslider_panel_header' );
 
     // Display sliders list
 	$slider_table_list = new MSP_List_Table();
@@ -60,19 +61,30 @@
 	    	$starter_fields   = msp_get_slider_starter_fields();
 
 	    	foreach ( $starter_sections as $starter_section ) {
+
+                ob_start();
 		    	?>
-		    	<div class="msp-dialog-inner-title ui-helper-clearfix">
-		    		<span><?php echo $starter_section['title']; ?></span>
-		    	</div>
-		    	<?php
+		    	<div class="msp-dialog-inner-title ui-helper-clearfix msp-type-<?php echo esc_attr( $starter_section['id'] ); ?>">
+
+                <?php
+                if( ! empty( $starter_section['title'] ) ) {
+                    echo '<span>' . $starter_section['title'] . '</span>';
+                } elseif( ! empty( $starter_section['content'] ) ) {
+                    echo '<div>' . $starter_section['content'] . '</div>';
+                }
+
+                echo "</div>";
+
+                // make the section titles filterable
+                echo apply_filters( 'masterslider_sample_sliders_section_markup_' . esc_attr( $starter_section['id'] ) , ob_get_clean() );
 
 		    	$section_id = $starter_section['id'];
 	    		$section_fields = isset( $starter_fields[ $section_id ] ) ? $starter_fields[ $starter_section['id'] ] : array();
 
 	    		foreach ( $section_fields as $starter_data ) {
 
-	    			$selected_attr  = ( 'true' == $starter_data['selected'] ) ? 'selected' : '';
-	    			$is_unavailable = isset( $starter_data['disable'] ) && 'true' == $starter_data['disable'] ? ' is-unavailable' : '';
+	    			$selected_attr  = isset( $starter_data['selected'] ) && 'true' == $starter_data['selected'] ? 'selected'        : '';
+	    			$is_unavailable = isset( $starter_data['disable'] )  && 'true' == $starter_data['disable']  ? ' is-unavailable' : '';
 	    			$disabled_msg   = isset( $starter_data['disabled_msg'] ) && ! empty( $starter_data['disabled_msg'] ) ? $starter_data['disabled_msg'] : '';
 
 	    			?>
@@ -80,7 +92,13 @@
 							data-starter-uid="<?php echo $starter_data['id']; ?>" data-starter-section="<?php echo $section_id; ?>" data-disabled-msg="<?php echo $disabled_msg; ?>"  >
 				        <div class="msp-templte-selected"></div>
 				        <img src="<?php echo $starter_data['screenshot']; ?>" />
-				        <div class="msp-template-caption"><?php echo $starter_data['label']; ?><span></span></div>
+				        <?php if ( $is_unavailable && 'wc-product-slider' !== $starter_data['id'] ): ?>
+					        <div class="msp-template-info">
+					        	<a href="<?php echo esc_url( $starter_data['demo_url'] ); ?>" target="_blank"><img src="<?php echo esc_url( MSWP_AVERTA_ADMIN_URL ); ?>/assets/images/thirdparty/preview.png" alt="Preview"><?php _e( 'Preview', MSWP_TEXT_DOMAIN ); ?></a>
+					        	<a href="<?php echo esc_url( $starter_data['test_drive_url'] ); ?>" target="_blank"><img src="<?php echo esc_url( MSWP_AVERTA_ADMIN_URL ); ?>/assets/images/thirdparty/test-drive.png" alt="Test Drive"><?php _e( 'Test Drive', MSWP_TEXT_DOMAIN ); ?></a>
+					        </div>
+				        <?php endif ?>
+				        <div class="msp-template-caption" title="<?php echo esc_attr( $starter_data['label'] ); ?>"><?php echo $starter_data['label']; ?><span></span></div>
 			        </div>
 	    			<?php
 

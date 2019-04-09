@@ -208,8 +208,13 @@ class Master_Slider_Admin {
 		if ( ! isset( $this->sliders_screen_hook_suffix ) ) {
 			return;
 		}
-
+		
 		$screen = get_current_screen();
+
+		if( empty( $screen->id ) ){
+			return;
+		}
+		
 		if ( $this->sliders_screen_hook_suffix == $screen->id ) {
 
 			if ( isset( $_REQUEST['slider_id'] ) ) {

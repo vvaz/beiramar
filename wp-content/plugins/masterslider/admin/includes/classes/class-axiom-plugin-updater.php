@@ -107,7 +107,7 @@ if( ! class_exists('Axiom_Plugin_Updater') ) {
          * @return string   The API URI
          */
         public function get_download_api() {
-            return 'http://support.averta.net/envato/api/?branch=envato&group=items&cat=download-purchase';
+            return 'http://support.averta.net/en/api/?branch=envato&group=items&cat=download-purchase';
         }
 
         /**
@@ -194,11 +194,11 @@ if( ! class_exists('Axiom_Plugin_Updater') ) {
                 $error_code    = isset( $result['code'] ) ? $result['code']. '. ' : '';
 
                 return new WP_Error( 'no_credentials',
-                                        apply_filters( 'axiom_plugin_updater_failed_connect_api',
-                                            __( 'Faild to connect to download API ..') . $error_message . $error_code ,
-                                            $this->slug, $error_message , $error_code
-                                        )
-                                    );
+                    apply_filters( 'axiom_plugin_updater_failed_connect_api',
+                        __( 'Faild to connect to download API ..') . $error_message . $error_code ,
+                        $this->slug, $error_message , $error_code
+                    )
+                );
             }
             $json = $request['body'];
             $result = json_decode( $request['body'], true );
@@ -210,11 +210,11 @@ if( ! class_exists('Axiom_Plugin_Updater') ) {
 
                 // Envato API error ..
                 return new WP_Error( 'no_credentials',
-                                        apply_filters( 'axiom_plugin_updater_api_error',
-                                            __( $json . 'Error on connecting to download API ..') . $error_message . ' [' . $error_code . ']' ,
-                                            $this->slug, $error_message , $error_code
-                                        )
-                                    );
+                    apply_filters( 'axiom_plugin_updater_api_error',
+                        __( $json . 'Error on connecting to download API ..') . $error_message . ' [' . $error_code . ']' ,
+                        $this->slug, $error_message , $error_code
+                    )
+                );
             }
 
             return $result['download_url'];
@@ -251,46 +251,6 @@ if( ! class_exists('Axiom_Plugin_Updater') ) {
             $the_download_url = $this->get_download_url( $username, $purchase_code, $token );
 
             return $the_download_url;
-
-            // if( is_wp_error( $the_download_url ) )
-            //     return $the_download_url;
-
-            // $download_file =  download_url( $the_download_url );
-
-            // if( is_wp_error( $download_file ) ) {
-            //     return $download_file;
-            // }
-
-            // $upgrade_folder   = $wp_filesystem->wp_content_dir() . "upgrade_dir/{$this->slug}";
-            // $installable_file = trailingslashit( $upgrade_folder ) . $this->installable_plugin_zip_file;
-
-
-            // if ( $wp_filesystem->is_dir( $upgrade_folder ) ) {
-            //     if ( ! $wp_filesystem->delete( $upgrade_folder ) ){
-            //         return new WP_Error( 'delete_failed_update_plugin', __( 'Could not clean installation directory.' ) . ' ['. $upgrade_folder .']', $upgrade_folder );
-            //     }
-            // }
-
-            // if ( ! $wp_filesystem->mkdir( $upgrade_folder, FS_CHMOD_DIR ) ){
-            //     return new WP_Error( 'mkdir_failed_update_plugin', __( 'Could not create directory.' ) . ' ['. $upgrade_folder .']', $upgrade_folder );
-            // }
-
-            // if ( ! $wp_filesystem->copy( $download_file, $installable_file, true, FS_CHMOD_FILE) ) {
-            //     // If copy failed, chmod file to 0644 and try again.
-            //     $wp_filesystem->chmod( $installable_file, FS_CHMOD_FILE );
-            //     if ( ! $wp_filesystem->copy( $download_file, $installable_file, true, FS_CHMOD_FILE) ){
-            //         return new WP_Error( 'copy_failed_copy_file', __( 'Could not copy installable file.' ), $installable_file );
-            //     }
-            // }
-
-            // // remove temp file
-            // unlink( $download_file );
-
-            // if( is_file( $installable_file ) ) {
-            //     return $installable_file;
-            // }
-
-            // return new WP_Error( 'no_credentials', __( 'Error on installing archive file ..' ) );
         }
 
 
@@ -444,7 +404,13 @@ if( ! class_exists('Axiom_Plugin_Updater') ) {
             $wp_list_table  = _get_list_table('WP_Plugins_List_Table');
 
             if ( is_network_admin() || !is_multisite() ) {
-                echo '<tr class="plugin-update-tr"><td colspan="' . $wp_list_table->get_column_count() . '" class="plugin-update colspanchange"><div class="update-message">';
+                if ( is_network_admin() ) {
+                    $active_class = is_plugin_active_for_network( $file ) ? ' active' : '';
+                } else {
+                    $active_class = is_plugin_active( $file ) ? ' active' : '';
+                }
+
+                echo '<tr class="plugin-update-tr' . $active_class . '"><td colspan="' . $wp_list_table->get_column_count() . '" class="plugin-update colspanchange"><div class="update-message notice inline notice-warning notice-alt"><p>';
 
                 if ( ! current_user_can('update_plugins') ){
                     printf( __('There is a new version of %1$s available. <a href="%2$s" class="thickbox" title="%3$s">View version %4$s details</a>.'),
@@ -452,20 +418,26 @@ if( ! class_exists('Axiom_Plugin_Updater') ) {
                     );
 
                 } else if ( empty( $r->package ) ){
-                    printf( __('There is a new version of %1$s available. <a href="%2$s" class="thickbox" title="%3$s">View version %4$s details</a>. <em>Please visit %5$ssetting page%6$s to enable automatic update for this plugin.</em>' ),
-                           $plugin_name, esc_url( $details_url ), esc_attr( $plugin_name ),
-                           $r->new_version, '<a href="'.admin_url( 'admin.php?page='. $this->slug.'-setting' ).'">', '</a>'
+                    printf(
+                        __( 'There is a new version of %1$s available. <a href="%2$s" class="thickbox" title="%3$s">View version %4$s details</a>. <em>To receive automatic updates, license activation is required. Please visit %5$ssetting page%6$s to activate the license.</em>' ) . ' %7$s',
+                        $plugin_name,
+                        esc_url( $details_url ),
+                        esc_attr( $plugin_name ),
+                        $r->new_version,
+                        '<a href="'.admin_url( 'admin.php?page='. $this->slug.'-setting' ).'">', '</a>',
+                        '<a href="http://docs.averta.net/display/mswpdoc/Master+Slider+Bundled+in+a+Theme" target="_blank">'. __( 'Got Master Slider in theme?' ) . '</a>'
                     );
+
                 } else {
                     printf( __('There is a new version of %1$s available. <a href="%2$s" class="thickbox" title="%3$s">View version %4$s details</a> or <a href="%5$s">update now</a>.'),
                            $plugin_name, esc_url($details_url), esc_attr($plugin_name), $r->new_version,
-                           wp_nonce_url( self_admin_url("update.php?action={$this->slug}-upgrade&plugin=") . $file, 'upgrade-plugin_' . $file)
+                           wp_nonce_url( self_admin_url("update.php?action={$this->slug}-upgrade&plugin=") . $file, 'upgrade-plugin_' . $file )
                     );
                 }
 
                 do_action( "in_plugin_update_message-{$file}", $plugin_data, $r );
 
-                echo '</div></td></tr>';
+                echo '</p></div></td></tr>';
             }
         }
     }
