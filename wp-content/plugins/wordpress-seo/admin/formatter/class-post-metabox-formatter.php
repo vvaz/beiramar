@@ -16,7 +16,9 @@ class WPSEO_Post_Metabox_Formatter implements WPSEO_Metabox_Formatter_Interface 
 	private $post;
 
 	/**
-	 * @var string The permalink to follow.
+	 * The permalink to follow.
+	 *
+	 * @var string
 	 */
 	private $permalink;
 
@@ -153,10 +155,16 @@ class WPSEO_Post_Metabox_Formatter implements WPSEO_Metabox_Formatter_Interface 
 	/**
 	 * Retrieves the title template.
 	 *
-	 * @return string
+	 * @return string The title template.
 	 */
 	private function get_title_template() {
-		return $this->get_template( 'title' );
+		$title = $this->get_template( 'title' );
+
+		if ( $title === '' ) {
+			return '%%title%% %%sep%% %%sitename%%';
+		}
+
+		return $title;
 	}
 
 	/**
