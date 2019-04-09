@@ -1,19 +1,25 @@
 <?php
 /**
- * WP OAuth Server API.
+ * WP OAuth Server API
+ *
+ * @author Justin Greer <justin@justn-greer.com>
  */
+
 defined( 'ABSPATH' ) or die( 'No script kiddies please!' );
 
 do_action( 'wo_before_api', array( $_REQUEST ) );
-require_once dirname( __FILE__ ) . '/OAuth2/Autoloader.php';
-OAuth2\Autoloader::register();
 
-$settings         = get_option( 'wo_options' );
+require_once( dirname( __FILE__ ) . '/WPOAuth2/Autoloader.php' );
+WPOAuth2\Autoloader::register();
+
+$settings = wo_setting();
+
 $default_settings = _WO()->defualt_settings;
 
+// Shutdown the API if it is not enabled
 if ( 0 == wo_setting( 'enabled' ) ) {
 	do_action( 'wo_before_unavailable_error' );
-	$response = new OAuth2\Response();
+	$response = new WPOAuth2\Response();
 	$response->setError( 503, 'error', __( 'temporarily unavailable', 'wp-oauth' ) );
 	$response->send();
 	exit;
@@ -21,8 +27,8 @@ if ( 0 == wo_setting( 'enabled' ) ) {
 
 $wo_strict_api_lockdown = apply_filters( 'wo_strict_api_lockdown', false );
 if ( $wo_strict_api_lockdown && ! wo_is_core_valid() && ! wo_is_dev() ) {
-	$response = new OAuth2\Response();
-	$response->setError( 403, 'security_risk', __( 'plugin core is not authenticate', 'wp-oauth' ) );
+	$response = new WPOAuth2\Response();
+	$response->setError( 403, 'security_risk', __( 'plugin core is not authentic', 'wp-oauth' ) );
 	$response->send();
 	exit;
 }
@@ -30,7 +36,7 @@ if ( $wo_strict_api_lockdown && ! wo_is_core_valid() && ! wo_is_dev() ) {
 global $wp_query;
 $method     = $wp_query->get( 'oauth' );
 $well_known = $wp_query->get( 'well-known' );
-$storage    = new OAuth2\Storage\Wordpressdb();
+$storage    = new WPOAuth2\Storage\Wordpressdb();
 $config     = array(
 	'use_crypto_tokens'                 => false,
 	'store_encrypted_token_string'      => false,
@@ -39,9 +45,9 @@ $config     = array(
 	'id_lifetime'                       => wo_setting( 'id_token_lifetime' ),
 	'access_lifetime'                   => wo_setting( 'access_token_lifetime' ),
 	'refresh_token_lifetime'            => wo_setting( 'refresh_token_lifetime' ),
-	'www_realm'                         => 'Service',
-	'token_param_name'                  => 'access_token',
-	'token_bearer_header_name'          => 'Bearer',
+	'www_realm'                         => apply_filters( 'wo_www_realm', 'Service' ),
+	'token_param_name'                  => apply_filters( 'wo_token_param_name', 'access_token' ),
+	'token_bearer_header_name'          => apply_filters( 'wo_token_bearer_header_name', 'Bearer' ),
 	'enforce_state'                     => wo_setting( 'enforce_state' ),
 	'require_exact_redirect_uri'        => wo_setting( 'require_exact_redirect_uri' ),
 	'allow_implicit'                    => wo_setting( 'implicit_enabled' ),
@@ -50,9 +56,10 @@ $config     = array(
 	'always_issue_new_refresh_token'    => apply_filters( 'wo_always_issue_new_refresh_token', true ),
 	'unset_refresh_token_after_use'     => apply_filters( 'wo_unset_refresh_token_after_use', false ),
 	'redirect_status_code'              => apply_filters( 'wo_redirect_status_code', 302 ),
+	'use_jwt_access_tokens'             => false
 );
 
-$server = new OAuth2\Server( $storage, $config );
+$server = new WPOAuth2\Server( $storage, $config );
 
 /*
 |--------------------------------------------------------------------------
@@ -66,7 +73,7 @@ $server = new OAuth2\Server( $storage, $config );
 $support_grant_types = array();
 
 if ( '1' == wo_setting( 'auth_code_enabled' ) ) {
-	$server->addGrantType( new OAuth2\GrantType\AuthorizationCode( $storage ) );
+	$server->addGrantType( new WPOAuth2\GrantType\AuthorizationCode( $storage ) );
 }
 
 /*
@@ -78,18 +85,17 @@ if ( '1' == wo_setting( 'auth_code_enabled' ) ) {
 | Until further notice, the default scope is 'basic'. Plans are in place to
 | allow this scope to be adjusted.
 |
-| @todo Added dynamic default scope
-|
  */
-$default_scope = 'basic';
+$default_scope = apply_filters( 'wo_default_scope', 'basic' );
 
 $supported_scopes = apply_filters( 'wo_scopes', array(
 	'openid',
 	'profile',
-	'email'
+	'email',
+	'basic'
 ) );
 
-$scope_util = new OAuth2\Scope( array(
+$scope_util = new WPOAuth2\Scope( array(
 	'default_scope'    => $default_scope,
 	'supported_scopes' => $supported_scopes,
 ) );
@@ -107,7 +113,7 @@ $server->setScopeUtil( $scope_util );
  */
 if ( 'token' == $method ) {
 	do_action( 'wo_before_token_method', array( $_REQUEST ) );
-	$server->handleTokenRequest( OAuth2\Request::createFromGlobals() )->send();
+	$server->handleTokenRequest( WPOAuth2\Request::createFromGlobals() )->send();
 	exit;
 }
 
@@ -127,23 +133,11 @@ if ( 'token' == $method ) {
 if ( 'authorize' == $method ) {
 
 	do_action( 'wo_before_authorize_method', array( $_REQUEST ) );
-	$request  = OAuth2\Request::createFromGlobals();
-	$response = new OAuth2\Response();
+	$request  = WPOAuth2\Request::createFromGlobals();
+	$response = new WPOAuth2\Response();
 
 	if ( ! $server->validateAuthorizeRequest( $request, $response ) ) {
 		$response->send();
-		exit;
-	}
-
-	/**
-	 * @todo Some how we need to manage the prompt to login here but only when using openID. This is important and may
-	 * not be the best place to handle this request. Explore the options.
-	 *
-	 * $prompt   = $request->query( 'prompt', 'consent' );
-	 * if( $prompt == 'login') do show the authorization form again even if they are logged in.
-	 */
-	if ( ! is_user_logged_in() ) {
-		wp_redirect( wp_login_url( site_url( $_SERVER['REQUEST_URI'] ) ) );
 		exit;
 	}
 
@@ -175,11 +169,37 @@ if ( 'authorize' == $method ) {
 			} elseif ( $prompt == 'login' ) {
 
 				wp_logout();
+
+				// Redirect Fix - Option
+				if ( $settings['home_url_modify'] ) {
+					wp_redirect( home_url( add_query_arg( array( 'ignore_prompt' => '' ) ) ) );
+					exit;
+				}
+
 				wp_redirect( site_url( add_query_arg( array( 'ignore_prompt' => '' ) ) ) );
 				exit;
 
 			}
 		}
+	}
+
+	/**
+	 * @todo Some how we need to manage the prompt to login here but only when using openID. This is important and may
+	 * not be the best place to handle this request. Explore the options.
+	 *
+	 * $prompt   = $request->query( 'prompt', 'consent' );
+	 * if( $prompt == 'login') do show the authorization form again even if they are logged in.
+	 */
+	if ( ! is_user_logged_in() ) {
+
+		// Redirect Fix - Option
+		if ( $settings['home_url_modify'] ) {
+			wp_redirect( wp_login_url( home_url( $_SERVER['REQUEST_URI'] ) ) );
+			exit;
+		}
+
+		wp_redirect( wp_login_url( site_url( $_SERVER['REQUEST_URI'] ) ) );
+		exit;
 	}
 
 	/**
@@ -237,13 +257,10 @@ if ( 'authorize' == $method ) {
 |@since 3.0.5
 */
 if ( 'keys' == $well_known ) {
-	$keys       = apply_filters( 'wo_server_keys', array(
-		'public'  => WOABSPATH . '/library/keys/public_key.pem',
-		'private' => WOABSPATH . '/library/keys/private_key.pem',
-	) );
+	$keys       = wo_get_server_certs();
 	$public_key = openssl_pkey_get_public( file_get_contents( $keys['public'] ) );
 	$public_key = openssl_pkey_get_details( $public_key );
-	$response   = new OAuth2\Response( array(
+	$response   = new WPOAuth2\Response( array(
 		'keys' => array(
 			array(
 				'kty' => 'RSA',
@@ -265,32 +282,34 @@ if ( 'keys' == $well_known ) {
 |
 */
 if ( 'openid-configuration' == $well_known ) {
-	$openid_discovery_values = array(
-		'issuer'                                => home_url( null, 'https' ),
-		'authorization_endpoint'                => home_url( '/oauth/authorize/' ),
-		'token_endpoint'                        => home_url( '/oauth/token/' ),
-		'userinfo_endpoint'                     => home_url( '/oauth/me/' ),
-		'jwks_uri'                              => home_url( '/.well-known/keys' ),
-		'response_types_supported'              => array(
-			'code',
-			'id_token',
-			'token id_token',
-			'code id_token'
-		),
-		'subject_types_supported'               => array(
-			'public'
-		),
-		'id_token_signing_alg_values_supported' => array(
-			'RS256'
-		),
-		'token_endpoint_auth_methods_supported' => array(
-			'client_secret_basic'
+	$openid_discovery_values = apply_filters( 'wpo_well_known_openid_configuration', array(
+			'issuer'                                => home_url( null, 'https' ),
+			'authorization_endpoint'                => home_url( '/oauth/authorize/' ),
+			'token_endpoint'                        => home_url( '/oauth/token/' ),
+			'userinfo_endpoint'                     => home_url( '/oauth/me/' ),
+			'end_session_endpoint'                  => home_url( '/oauth/destroy/' ),
+			'jwks_uri'                              => home_url( '/.well-known/keys/' ),
+			'response_types_supported'              => array(
+				'code',
+				'id_token',
+				'token id_token',
+				'code id_token'
+			),
+			'subject_types_supported'               => array(
+				'public'
+			),
+			'id_token_signing_alg_values_supported' => array(
+				'RS256'
+			),
+			'token_endpoint_auth_methods_supported' => array(
+				'client_secret_basic'
+			)
 		)
 	);
 
 	$openid_discovery_configuration = apply_filters( 'wo_openid_discovery', $openid_discovery_values );
 
-	$response = new OAuth2\Response( $openid_discovery_configuration );
+	$response = new WPOAuth2\Response( $openid_discovery_configuration );
 	$response->send();
 	exit;
 }
@@ -316,7 +335,7 @@ if ( array_key_exists( $method, $resource_server_methods ) ) {
 
 	// If the method is is set to public, lets just run the method without.
 	if ( isset( $resource_server_methods[ $method ]['public'] ) && $resource_server_methods[ $method ]['public'] ) {
-		call_user_func_array( $resource_server_methods[ $method ]['func'], $_REQUEST );
+		call_user_func( $resource_server_methods[ $method ]['func'] );
 		exit;
 	}
 
@@ -327,7 +346,7 @@ if ( array_key_exists( $method, $resource_server_methods ) ) {
 	 */
 	$current_user = apply_filters( 'determine_current_user', null );
 	if ( is_null( $current_user ) || empty( $current_user ) ) {
-		$response = new OAuth2\Response();
+		$response = new WPOAuth2\Response();
 		$response->setError(
 			400,
 			'invalid_request',
@@ -338,7 +357,7 @@ if ( array_key_exists( $method, $resource_server_methods ) ) {
 		exit;
 	}
 
-	$token = $server->getAccessTokenData( OAuth2\Request::createFromGlobals() );
+	$token = $server->getAccessTokenData( WPOAuth2\Request::createFromGlobals() );
 	if ( is_null( $token ) ) {
 		$server->getResponse()->send();
 		exit;
@@ -355,7 +374,7 @@ if ( array_key_exists( $method, $resource_server_methods ) ) {
  *
  * @since 3.1.0
  */
-$response = new OAuth2\Response();
+$response = new WPOAuth2\Response();
 $response->setError( 400, 'invalid_request', __( 'unknown request', 'wp-oauth' ) );
 $response->send();
 exit;

@@ -62,10 +62,10 @@ $options = get_option( 'wo_license_information' );
 	</tr>
 
 	<tr>
-		<th style="text-align:left;"><?php _e( 'Genuine', 'wp-oauth' ); ?>:</th>
+		<th style="text-align:left;"><?php _e( 'Safe Codebase', 'wp-oauth' ); ?>:</th>
 		<td>
 			<?php
-			echo WOCHECKSUM == strtoupper( md5_file( WOABSPATH . '/includes/functions.php' ) ) ? "<span style='color:green;''>Yes</span>" : "<span style='color:orange;'>WARNING - THIS PLUGIN IS NOT GENUINE.</span>";
+			echo WOCHECKSUM == strtoupper( md5_file( WOABSPATH . '/includes/functions.php' ) ) ? "<span style='color:green;''>Yes</span>" : "<span style='color:orange;'>WARNING - THIS PLUGIN IS NOT SAFE TO USE.</span>";
 			?>
 		</td>
 	</tr>

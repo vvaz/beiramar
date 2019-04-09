@@ -2,11 +2,11 @@
 
 Contributors: justingreerbbi
 Donate link: http://justin-greer.com/
-Tags: OAuth 2.0 Service, oauth2, OAuth 2, SSO, Single Sign On, Authentication
+Tags: OAuth2 Service, oauth2, OAuth provider, Provider, OAuth, OAuth client, Single Sign On, SSO, OpenID Connect, OIDC, OpenID, Connect
 Requires at least: 4.7.2
-Tested up to: 4.9
+Tested up to: 5.1
 Requires PHP: 5.6
-Stable tag: 3.4.5
+Stable tag: 3.7.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -14,30 +14,36 @@ Create and Manage an OAuth 2.0 server powered by WordPress. Become a Single Sign
 
 == Description ==
 
-This plugin is a full OAuth 2.0 authorization server for WordPress. The goal of WP OAuth Server is to provide an authorization method that 3rd party platforms can use to securely authorize users from your WordPress site.
+This plugin is a full OAuth 2.0 authorization server/provider for WordPress. 
+The goal of WP OAuth Server is to provide an easy to use authorization method that 3rd party platforms can use to securely authorize users from your WordPress site.
+
+[youtube https://youtu.be/ZOUsY4Kp_6U]
 
 = Features =
 
-* Authorization Grant Type
-* Single Sign On Provider
-* OAuth 2.0 Server
-* Built-in Resource Server
+* Unlimited Clients
+* Support for Implicit Flow
+* Built-In Resource Server
+* Automated Authorization
+* Extendable
 
 = Supported Grant Types =
 
 * Authentication Code
-* User Credentials - pro
-* Client Credentials - pro
-* Refresh Token - pro
-* OpenID Connect with discovery - pro
+* User Credentials (Pro Only)
+* Client Credentials (Pro Only)
+* Refresh Token (Pro Only)
+* OpenID Connect with discovery (Pro Only)
 
-= Connect Mobile Applications to WordPress =
+= How to Use =
 
-WP OAuth Server allows you to connect a mobile application to any WordPress site. The application can then use the REST API as any given user. This feature allow allow just for a simple user login for mobile devices.
+Visit https://wp-oauth.com/support/documentation/ for detailed documentation on installing, configuring and using
+WordPress OAuth Server.
 
-= Documentation =
+= Licensing = 
 
-Visit https://wp-oauth.com/support/documentation/ for detailed documentation on installing, configuring and using WordPress OAuth Server.
+WP OAuth Server is free to used. Please support the project by licensing. You can view more information at
+https://wp-oauth.com.
 
 = Minimum Requirements =
 
@@ -46,6 +52,7 @@ Visit https://wp-oauth.com/support/documentation/ for detailed documentation on 
 
 = Other Information =
 
+* NOTE: As of 3.0.0, there are no backward compatibility for any version older than 3.0.0
 * NOTE: Due to IIS's inability play nice, WP OAuth Server may work but is very limited for Windows OS.
 
 = Support =
@@ -61,9 +68,9 @@ Support requests should be made by opening a support request at https://wp-oauth
 
 == Frequently Asked Questions ==
 
-= Do I need OAuth 2 or App Passwords? =
+= Do I need OAuth2 or App Passwords? =
 This depends. If you project requires random users access an application, then OAuth2 is the route you need. If you are making
-a server that handles a one time client id and secret for authorization, then Application Passwords is for you.
+a server that handles a one time client id and secert for authorization, then Application Passwords is for you.
 
 = How do I add a APP/Client? =
 Click on `Settings->OAuth Server`. Click on the `Clients` tab and then `Add New Client`. Enter the client information and your are done.
@@ -92,33 +99,56 @@ For any upgrade or modification, PLEASE PLEASE PLEASE make a full backup of your
 
 == Changelog ==
 
-= 3.4.5 =
-*Release Date - March 6 2018*
+= 3.6.0 =
+* UPDATED: OAuth2 namespace changed to WPOauth2 for better compatibility
+* FIXED: Bug in API authorization block functionality
+* FIXED: Default scope of basic was not being imitated correctly
+* UPDATED: Formatting updates
 
-* Updated code for 7.2 stricter standards
+= 3.5.9 =
+* Fixed possible conflict with CSS in admin that prevented buttons from working or displaying
+* Content updates
+
+= 3.5.8 =
+* NEW: Hourly cleanup of expired access tokens and auth codes.
+
+= 3.5.7 =
+* TESTED: With new security release
+
+= 3.4.6 =
+* UPDATE: Code for 7.2 stricter standards.
+* UPDATE: Updated admin UI for better experience in settings.
+* FIX: Admin Notice Fix for settings.
+* NEW: Added feature to disable entire REST API from non authenticated users.
+* NEW: Live chat support added to backend of plugin.
+
+= 3.4.5 =
+* UPDATE: Database are not set to 191 char limits for unique to provide better backward compatibility.
+* FIX: Bug fix in refresh token expire time.
 
 = 3.4.4 =
-*Release Date - 1 December 2017*
-
-* FIX: Undefined notice error
+* NEW: Added filter wo_get_access_token_expires_return to the getAccessToken storage method.
+* UPDATE: Client type public setting has been updated.
+* UPDATE: Destroy endpoint. Now does not require two separate methods for different outcomes.
 
 = 3.4.3 =
-*Release Date - 26 October 2017*
-
-* FIX: Notice Error
 * ENHANCEMENT: UX while editing clients
 * UPDATE: Base code updates
+* UPDATE: /oauth/destroy/ endpoint was modified to handle OpenID Session Management
+* UPDATED: /oauth/me/ to return proper OpenID required fields when scope "openid" was used to authorize the access access token
+* NEW: Added "wpo_well_known_openid_configuration" filter for OpenID Connect .well-known configuration
+* FIXED: Consent Prompt redirect issues.
+* UPDATED: Private & Public Key handling on activation.
+* NEW: Added single function for Server certificates locations.
+
+= 3.4.3 =
+* FIXED: OpenID well-known key bug for PHP namespace has been fixed.
 
 = 3.4.2 =
-*Release Date - 23 October 2017*
-
-* NEW: Updated entire code base to match
 * FIX: License error using older PHP version
 * FIX: Clash with thickbox in admin area
 
 = 3.4.1 =
-*Release Date - 13 october 2017*
-
 * NEW: Added prompt parameter support for "login", "consent", and "none"
 * NEW: Added User consent window for Authorization code flow.
 * NEW: Added filter "wo_use_grant_request" to enable user consent dialog. Boolean.

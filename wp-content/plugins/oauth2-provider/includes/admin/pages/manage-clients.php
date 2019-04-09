@@ -1,9 +1,8 @@
-<?php
-function wo_admin_manage_clients_page() {
+<?php function wo_admin_manage_clients_page() {
 	wp_enqueue_style( 'wo_admin' );
 	wp_enqueue_script( 'wo_admin' );
 	?>
-    <div class="wrap" id="profile-page">
+    <div class="wrap">
 
         <h2><?php _e( 'Clients', 'wp-oauth' ); ?>
             <a class="add-new-h2 "
@@ -19,27 +18,18 @@ function wo_admin_manage_clients_page() {
             </div>
 
             <div class="col span_2_of_6 sidebar">
-                <div class="module pro-version">
-                    <h3>What does the Pro version offer?</h3>
+                <div class="module">
+                    <h3>Technical Support</h3>
                     <div class="inner">
                         <p>
-                            The pro version of this plugin is designed to give you more power over the OAuth 2.0
-                            process.
+                            Upgrade to Pro with 30% OFF and receive priority support and all the grant types.
                         </p>
 
-                        <ul>
-                            <li>Unlimited Clients</li>
-                            <li>All Grant Types</li>
-                            <li>OpenID Connect w/ Discovery</li>
-                            <li>Mobile Device User Login Capability</li>
-                            <li>Awesome Chat & Ticket Support</li>
-                        </ul>
+                        <a href="https://wp-oauth.com/downloads/wp-oauth-server/" class="button button-primary">Download
+                            PRO</a>
 
-                        <h4>Discount Code: "PROME"</h4>
-                        <a href="https://wp-oauth.com/downloads/wp-oauth-server/" class="button">
-                            Purchase WP OAuth Server
-                        </a>
-                        <br/><br/>
+                        <h4>Use "PROME" at checkout for 30% OFF.</h4>
+                        <strong>Build <?php echo _WO()->version; ?></strong>
                     </div>
                 </div>
 
@@ -57,7 +47,8 @@ function wo_admin_manage_clients_page() {
 						$current_user = wp_get_current_user();
 						?>
                         <form action="https://wp-oauth.com/professional-services-request/">
-                            <input type="hidden" name="yourname" placeholder="Enter Your Name" value="<?php echo $current_user->user_firstname; ?>" required/>
+                            <input type="text" name="yourname" placeholder="Enter Your Name"
+                                   value="<?php echo $current_user->user_firstname; ?>" required/>
                             <input type="hidden" name="email" value="<?php echo $current_user->user_email; ?>"/>
                             <input type="hidden" name="website" value="<?php echo site_url(); ?>"/>
 

@@ -92,3 +92,11 @@ function wo_public_insert_client( $client_data = null ) {
 
 	return $client_insert;
 }
+
+function wo_public_create_client() {
+}
+
+function wo_public_create_access_token() {
+}
+
+function wo_public_get_clients() {}

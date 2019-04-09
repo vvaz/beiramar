@@ -39,7 +39,7 @@ function wo_types() {
 	$args = array(
 		'labels'              => $labels,
 		'description'         => __( 'Description.', 'wp-oauth' ),
-		'public'              => true,
+		'public'              => false,
 		'publicly_queryable'  => false,
 		'show_ui'             => true,
 		'show_in_menu'        => false,
@@ -68,7 +68,7 @@ function wo_types() {
 function wo_insert_client( $client_data = null ) {
 
 	// @todo Look into changing capabilities to create_clients after proper mapping has been done
-	if ( ! current_user_can( 'manage_options' ) || is_null( $client_data ) || has_a_client() ) {
+	if ( ! current_user_can( 'manage_options' ) || is_null( $client_data ) ) {
 		exit( 'Not Allowed' );
 
 		return false;
@@ -253,12 +253,17 @@ function wo_crypt( $input, $rounds = 7 ) {
  * @todo Optimize query
  */
 function has_a_client() {
-	global $wpdb;
-	$count = $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->prefix}posts WHERE post_type = 'wo_client'" );
+	$client = new \WP_Query( array(
+		'post_type'   => 'wo_client',
+		'post_status' => 'any'
+	) );
 
-	if ( intval( $count ) >= 1 ) {
+	if ( $client->have_posts() ) {
+		//$client = $client->posts[0];
 		return true;
 	}
+
+	return false;
 }
 
 /**
@@ -299,15 +304,26 @@ function wo_os_is_win() {
 }
 
 /**
+ * Retireve the server keys location
+ *
+ * @return array
+ */
+function wo_get_server_certs(){
+	$keys = apply_filters( 'wo_server_keys', array(
+		'public'  => WOABSPATH . '/library/keys/public_key.pem',
+		'private' => WOABSPATH . '/library/keys/private_key.pem',
+	) );
+
+	return $keys;
+}
+
+/**
  * Return the private key for signing
  * @since 3.0.5
  * @return [type] [description]
  */
 function get_private_server_key() {
-	$keys = apply_filters( 'wo_server_keys', array(
-		'public'  => WOABSPATH . '/library/keys/public_key.pem',
-		'private' => WOABSPATH . '/library/keys/private_key.pem',
-	) );
+	$keys = wo_get_server_certs();
 
 	return file_get_contents( $keys['private'] );
 }
@@ -318,10 +334,7 @@ function get_private_server_key() {
  * @since 3.1.0
  */
 function get_public_server_key() {
-	$keys = apply_filters( 'wo_server_keys', array(
-		'public'  => WOABSPATH . '/library/keys/public_key.pem',
-		'private' => WOABSPATH . '/library/keys/private_key.pem',
-	) );
+	$keys = wo_get_server_certs();
 
 	return file_get_contents( $keys['public'] );
 }
@@ -345,10 +358,7 @@ function wo_get_algorithm() {
  * @return boolean [description]
  */
 function wo_has_certificates() {
-	$keys = apply_filters( 'wo_server_keys', array(
-		'public'  => WOABSPATH . '/library/keys/public_key.pem',
-		'private' => WOABSPATH . '/library/keys/private_key.pem',
-	) );
+	$keys = wo_get_server_certs();
 
 	if ( is_array( $keys ) ) {
 		foreach ( $keys as $key ) {
@@ -424,6 +434,16 @@ function wo_is_core_valid() {
 }
 
 /**
+ * Returns if the plugin is licensed
+ * @return Boolean True is valid
+ */
+function wo_is_licensed() {
+	$options = get_option( 'wo_license_information' );
+
+	return @$options['license'] == 'valid' ? true : false;
+}
+
+/**
  * Retrieve the license status
  * @return String Valid|Invalid
  */
@@ -455,6 +475,36 @@ function wo_license_information() {
 function wo_license_key() {
 	return get_option( "wo_license_key" );
 }
+
+/**
+ * Cheater watch
+ * @return [type] [description]
+ */
+function wo_cheater_watch() {
+	$wo_license_key = get_option( "wo_license_key", '' );
+	if ( wo_is_licensed() && strlen( $wo_license_key ) > 0 ) {
+		return;
+	}
+
+	$api_params = array(
+		'edd_action' => 'activate_license',
+		'license'    => $wo_license_key,
+		'item_name'  => urlencode( 'WP OAuth Server' ),
+		'url'        => home_url()
+	);
+
+	$response = wp_remote_get(
+		add_query_arg( $api_params, "https://wp-oauth.com" )
+	);
+
+	if ( ! is_wp_error( $response ) ) {
+		$license_data = json_decode( wp_remote_retrieve_body( $response ) );
+		update_option( "wo_license_key", $wo_license_key );
+		update_option( 'wo_license_information', (array) $license_data );
+	}
+}
+
+add_action( 'wo_daily_tasks_hook', 'wo_cheater_watch' );
 
 /**
  * Determine is environment is development
@@ -523,7 +573,7 @@ function wo_display_settings_tabs() {
 	$tabs         = apply_filters( 'wo_server_status_tabs', array(
 		'general' => 'General Information',
 		//'support' => 'Support',
-		//'license' => 'License(s)',
+		'license' => 'License(s)',
 		//'misc'    => 'Misc'
 	) );
 	$settings_tab = 'wo_server_status';

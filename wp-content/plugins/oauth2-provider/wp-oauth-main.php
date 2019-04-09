@@ -22,22 +22,23 @@ class WO_Server {
 
 	/** Default Settings */
 	public $defualt_settings = array(
-		'enabled'                    => 0,
-		'client_id_length'           => 30,
-		'auth_code_enabled'          => 0,
-		'client_creds_enabled'       => 0,
-		'user_creds_enabled'         => 0,
-		'refresh_tokens_enabled'     => 0,
-		'jwt_bearer_enabled'         => 0,
-		'implicit_enabled'           => 0,
-		'require_exact_redirect_uri' => 0,
-		'enforce_state'              => 0,
-		'refresh_token_lifetime'     => 86400, // 1 Days
-		'access_token_lifetime'      => 3600, // 1 Hour
-		'use_openid_connect'         => 0,
-		'id_token_lifetime'          => 3600,
-		'token_length'               => 40,
-		'beta'                       => 0
+		'enabled'                                => 0,
+		'client_id_length'                       => 30,
+		'auth_code_enabled'                      => 0,
+		'client_creds_enabled'                   => 0,
+		'user_creds_enabled'                     => 0,
+		'refresh_tokens_enabled'                 => 0,
+		'jwt_bearer_enabled'                     => 0,
+		'implicit_enabled'                       => 0,
+		'require_exact_redirect_uri'             => 0,
+		'enforce_state'                          => 0,
+		'refresh_token_lifetime'                 => 86400,
+		'access_token_lifetime'                  => 3600,
+		'use_openid_connect'                     => 0,
+		'id_token_lifetime'                      => 3600,
+		'token_length'                           => 40,
+		'beta'                                   => 0,
+		'block_all_unauthenticated_rest_request' => 0
 	);
 
 	function __construct() {
@@ -51,7 +52,7 @@ class WO_Server {
 		}
 
 		if ( ! defined( 'WOCHECKSUM' ) ) {
-			define( 'WOCHECKSUM', 'E1ACC4B452EA42B974ABBB7F82FF437F' );
+			define( 'WOCHECKSUM', 'D7A4A6BB02913D94A3D89D8DCA1C95B0' );
 		}
 
 		if ( function_exists( '__autoload' ) ) {
@@ -59,12 +60,10 @@ class WO_Server {
 		}
 		spl_autoload_register( array( $this, 'autoload' ) );
 
+		add_filter( 'rest_authentication_errors', array( $this, '_wo_block_unauthenticated_rest_requests' ) );
+		add_filter( 'determine_current_user', array( $this, '_wo_authenicate_bypass' ) );
 
-		//if ( ! defined( 'DOING_CRON' ) ) {
-		add_filter( 'determine_current_user', array( $this, '_wo_authenicate_bypass' ), 9999 );
 		add_action( 'init', array( __CLASS__, 'includes' ) );
-		//}
-
 	}
 
 	/**
@@ -80,9 +79,10 @@ class WO_Server {
 	 *
 	 * @author Mauro Constantinescu Modified slightly but still a contribution to the project.
 	 *
-	 * @return void
+	 * @return Int User ID
 	 */
 	public function _wo_authenicate_bypass( $user_id ) {
+
 		if ( $user_id && $user_id > 0 ) {
 			return (int) $user_id;
 		}
@@ -91,10 +91,10 @@ class WO_Server {
 			return (int) $user_id;
 		}
 
-		require_once( dirname( WPOAUTH_FILE ) . '/library/OAuth2/Autoloader.php' );
-		OAuth2\Autoloader::register();
-		$server  = new OAuth2\Server( new OAuth2\Storage\Wordpressdb() );
-		$request = OAuth2\Request::createFromGlobals();
+		require_once( dirname( WPOAUTH_FILE ) . '/library/WPOAuth2/Autoloader.php' );
+		WPOAuth2\Autoloader::register();
+		$server  = new WPOAuth2\Server( new WPOAuth2\Storage\Wordpressdb() );
+		$request = WPOAuth2\Request::createFromGlobals();
 		if ( $server->verifyResourceRequest( $request ) ) {
 			$token = $server->getAccessTokenData( $request );
 			if ( isset( $token['user_id'] ) && $token['user_id'] > 0 ) {
@@ -106,12 +106,33 @@ class WO_Server {
 	}
 
 	/**
+	 * Bock unathenticated REST requests
+	 *
+	 * @since 3.4.6
+	 */
+	public function _wo_block_unauthenticated_rest_requests( $result ) {
+
+		$block_all_unathunticated_rest_requests = wo_setting( 'block_all_unauthenticated_rest_request' );
+
+		if ( ! $block_all_unathunticated_rest_requests ) {
+
+			return $result;
+		}
+
+		if ( ! is_user_logged_in() ) {
+			return new WP_Error( 'rest_not_authorized', 'Authorization is required.', array( 'status' => 401 ) );
+		}
+
+		return $result;
+	}
+
+
+	/**
 	 * populate the instance if the plugin for extendability
 	 *
 	 * @return object plugin instance
 	 */
-	public
-	static function instance() {
+	public static function instance() {
 		if ( is_null( self::$_instance ) ) {
 			self::$_instance = new self();
 		}
@@ -177,8 +198,7 @@ class WO_Server {
 	 *
 	 * @return [type] [description]
 	 */
-	public
-	function install() {
+	public function install() {
 
 		global $wpdb;
 		$charset_collate = '';
@@ -195,7 +215,7 @@ class WO_Server {
 		$sql1 = "
 			CREATE TABLE IF NOT EXISTS {$wpdb->prefix}oauth_clients (
 			id 					  INT 			UNSIGNED NOT NULL AUTO_INCREMENT,
-	        client_id             VARCHAR(255)	NOT NULL UNIQUE,
+	        client_id             VARCHAR(191)	NOT NULL UNIQUE,
 	        client_secret         VARCHAR(255)  NOT NULL,
 	        redirect_uri          VARCHAR(2000),
 	        grant_types           VARCHAR(80),
@@ -210,7 +230,7 @@ class WO_Server {
 		$sql2 = "
 			CREATE TABLE IF NOT EXISTS {$wpdb->prefix}oauth_access_tokens (
 			id					 INT 			UNSIGNED NOT NULL AUTO_INCREMENT,
-			access_token         VARCHAR(255) 	NOT NULL UNIQUE,
+			access_token         VARCHAR(191) 	NOT NULL UNIQUE,
 		    client_id            VARCHAR(255)	NOT NULL,
 		    user_id              VARCHAR(80),
 		    expires              TIMESTAMP      NOT NULL,
@@ -221,7 +241,7 @@ class WO_Server {
 
 		$sql3 = "
 			CREATE TABLE IF NOT EXISTS {$wpdb->prefix}oauth_refresh_tokens (
-			refresh_token       VARCHAR(255)    NOT NULL UNIQUE,
+			refresh_token       VARCHAR(191)    NOT NULL UNIQUE,
 		    client_id           VARCHAR(255)    NOT NULL,
 		    user_id             VARCHAR(80),
 		    expires             TIMESTAMP      	NOT NULL,
@@ -232,7 +252,7 @@ class WO_Server {
 
 		$sql4 = "
 			CREATE TABLE IF NOT EXISTS {$wpdb->prefix}oauth_authorization_codes (
-	        authorization_code  VARCHAR(255)    NOT NULL UNIQUE,
+	        authorization_code  VARCHAR(191)    NOT NULL UNIQUE,
 	        client_id           VARCHAR(1000)   NOT NULL,
 	        user_id             VARCHAR(80),
 	        redirect_uri        VARCHAR(2000),
@@ -254,7 +274,7 @@ class WO_Server {
 
 		$sql6 = "
 			CREATE TABLE IF NOT EXISTS {$wpdb->prefix}oauth_jwt (
-        	client_id           VARCHAR(255)  NOT NULL UNIQUE,
+        	client_id           VARCHAR(191)  NOT NULL UNIQUE,
         	subject             VARCHAR(80),
         	public_key          VARCHAR(2000) NOT NULL,
         	PRIMARY KEY (client_id)
@@ -263,7 +283,7 @@ class WO_Server {
 
 		$sql7 = "
 			CREATE TABLE IF NOT EXISTS {$wpdb->prefix}oauth_public_keys (
-        	client_id            VARCHAR(255) NOT NULL UNIQUE,
+        	client_id            VARCHAR(191) NOT NULL UNIQUE,
         	public_key           VARCHAR(2000),
         	private_key          VARCHAR(2000),
         	encryption_algorithm VARCHAR(100) DEFAULT 'RS256',
@@ -283,19 +303,24 @@ class WO_Server {
 		/**
 		 * Create certificates for signing
 		 *
-		 * @todo Add pure PHP library to handle openSSL functionality if the server does not support it.
+		 * @updated 11.8.17 Key creation now checks for exists before processing.
 		 */
 		if ( function_exists( 'openssl_pkey_new' ) ) {
-			$res = openssl_pkey_new( array(
-				'private_key_bits' => 2048,
-				'private_key_type' => OPENSSL_KEYTYPE_RSA,
-			) );
-			openssl_pkey_export( $res, $privKey );
-			file_put_contents( dirname( WPOAUTH_FILE ) . '/library/keys/private_key.pem', $privKey );
 
-			$pubKey = openssl_pkey_get_details( $res );
-			$pubKey = $pubKey['key'];
-			file_put_contents( dirname( WPOAUTH_FILE ) . '/library/keys/public_key.pem', $pubKey );
+			if ( ! wo_has_certificates() ) {
+				$cert_locs = wo_get_server_certs();
+
+				$res = openssl_pkey_new( array(
+					'private_key_bits' => 2048,
+					'private_key_type' => OPENSSL_KEYTYPE_RSA,
+				) );
+				openssl_pkey_export( $res, $privKey );
+				file_put_contents( $cert_locs['private'], $privKey );
+
+				$pubKey = openssl_pkey_get_details( $res );
+				$pubKey = $pubKey['key'];
+				file_put_contents( $cert_locs['public'], $pubKey );
+			}
 
 			// Update plugin version
 			$plugin_data    = get_plugin_data( WPOAUTH_FILE );
@@ -315,15 +340,15 @@ class WO_Server {
 		// https://github.com/justingreerbbi/wp-oauth-server/issues/3
 		// And other known issues with increasing the token length
 		global $wpdb;
-		$wpdb->query( "ALTER TABLE {$wpdb->prefix}oauth_refresh_tokens MODIFY refresh_token VARCHAR(100);" );
-		$wpdb->query( "ALTER TABLE {$wpdb->prefix}oauth_refresh_tokens MODIFY client_id VARCHAR(100);" );
+		$wpdb->query( "ALTER TABLE {$wpdb->prefix}oauth_refresh_tokens MODIFY refresh_token VARCHAR(191);" );
+		$wpdb->query( "ALTER TABLE {$wpdb->prefix}oauth_refresh_tokens MODIFY client_id VARCHAR(191);" );
 
-		$wpdb->query( "ALTER TABLE {$wpdb->prefix}oauth_clients MODIFY client_id VARCHAR(100);" );
-		$wpdb->query( "ALTER TABLE {$wpdb->prefix}oauth_clients MODIFY client_secret VARCHAR(100);" );
+		$wpdb->query( "ALTER TABLE {$wpdb->prefix}oauth_clients MODIFY client_id VARCHAR(191);" );
+		$wpdb->query( "ALTER TABLE {$wpdb->prefix}oauth_clients MODIFY client_secret VARCHAR(191);" );
 
-		$wpdb->query( "ALTER TABLE {$wpdb->prefix}oauth_public_keys MODIFY client_id VARCHAR(100);" );
-		$wpdb->query( "ALTER TABLE {$wpdb->prefix}oauth_jwt MODIFY client_id VARCHAR(100);" );
-		$wpdb->query( "ALTER TABLE {$wpdb->prefix}oauth_authorization_codes MODIFY client_id VARCHAR(100);" );
+		$wpdb->query( "ALTER TABLE {$wpdb->prefix}oauth_public_keys MODIFY client_id VARCHAR(191);" );
+		$wpdb->query( "ALTER TABLE {$wpdb->prefix}oauth_jwt MODIFY client_id VARCHAR(191);" );
+		$wpdb->query( "ALTER TABLE {$wpdb->prefix}oauth_authorization_codes MODIFY client_id VARCHAR(191);" );
 
 		/**
 		 * Update the clients and import then into the CPT format
@@ -367,6 +392,11 @@ class WO_Server {
 
 		// DELETE OLD CLIENTS TABLE
 		$wpdb->query( "DROP TABLE {$wpdb->prefix}oauth_clients" );
+
+		// OPTIMIZE DATABASE
+		//$wpdb->query( "ALTER TABLE {$wpdb->prefix}oauth_access_tokens ADD UNIQUE (access_token)" );
+		//$wpdb->query( "ALTER TABLE {$wpdb->prefix}oauth_authorization_codes ADD UNIQUE (authorization_code)" );
+		//$wpdb->query( "ALTER TABLE {$wpdb->prefix}oauth_refresh_tokens ADD UNIQUE (refresh_token)" );
 	}
 }
 

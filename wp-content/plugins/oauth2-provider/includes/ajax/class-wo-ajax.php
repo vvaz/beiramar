@@ -4,8 +4,10 @@
  * @var array
  */
 $ajax_events = array(
-	'remove_client'     => false,
-	'regenerate_secret' => false
+	'remove_client'      => false,
+	'regenerate_secret'  => false,
+	'wo30notice_dismiss' => false,
+	'users_type_ahead'   => false
 );
 
 /** loop though all the ajax events and add then as needed */
@@ -14,6 +16,56 @@ foreach ( $ajax_events as $ajax_event => $nopriv ) {
 	if ( $nopriv ) {
 		add_action( 'wp_ajax_nopriv_wo_' . $ajax_event, 'wo_ajax_' . $ajax_event );
 	}
+}
+
+function wo_ajax_users_type_ahead() {
+
+	if ( ! current_user_can( 'manage_options' ) ) {
+		exit;
+	}
+
+	$user_string = $_REQUEST['query'];
+
+	$args = array(
+		'search'         => '*' . esc_attr( $user_string ) . '*',
+		'search_columns' => array( 'user_login', 'user_email' ),
+		'meta_query'     => array(
+			'relation' => 'OR',
+			array(
+				'key'     => 'first_name',
+				'value'   => $user_string,
+				'compare' => 'LIKE'
+			),
+			array(
+				'key'     => 'last_name',
+				'value'   => $user_string,
+				'compare' => 'LIKE'
+			),
+			array(
+				'key'     => 'description',
+				'value'   => $user_string,
+				'compare' => 'LIKE'
+			)
+		)
+	);
+
+	$user_query = new WP_User_Query( $args );
+
+	$users = $user_query->get_results();
+
+	$new_users = array();
+
+	foreach ( $users as $user ) {
+		$new_users[] = $user->user_login;
+		//array(
+		//	'id'   => $user->ID,
+		//	'name' => $user->user_login
+		//);
+	}
+
+	print_r( json_encode( $new_users ) );
+
+	exit;
 }
 
 /**
@@ -65,6 +117,28 @@ function wo_ajax_regenerate_secret() {
 			'error_description' => 'Something went wrong while updating the clients secret'
 		) );
 	}
+
+	exit;
+}
+
+/**
+ * Handle Dismiss of 30 notice
+ *
+ */
+function wo_ajax_wo30notice_dismiss() {
+
+	// Check the current user caps
+	if ( ! current_user_can( 'manage_options' ) ) {
+		exit;
+	}
+
+	// Set the option for the 30 notice as today's date and not bug for 24 hours.
+	update_option( 'wp_30day_notice', current_time( 'timestamp' ) );
+
+	print json_encode( array(
+		'success' => true,
+		'message' => 'Notification time has been set successfully'
+	) );
 
 	exit;
 }

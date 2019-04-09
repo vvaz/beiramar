@@ -3,7 +3,7 @@ function wo_add_client_page() {
 	wp_enqueue_style( 'wo_admin' );
 	wp_enqueue_script( 'wo_admin' );
 	?>
-    <div class="wrap" id="profile-page" xmlns="http://www.w3.org/1999/html" xmlns="http://www.w3.org/1999/html">
+    <div class="wrap">
 
         <h2><?php _e( 'Create Client', 'wp-oauth' ); ?>
             <a class="add-new-h2 "
@@ -12,10 +12,6 @@ function wo_add_client_page() {
         </h2>
 
         <hr/>
-
-		<?php if ( has_a_client() ) {
-
-		} ?>
 
         <form class="wo-form" action="" method="post">
 
@@ -27,12 +23,16 @@ function wo_add_client_page() {
                 <div class="col span_2_of_6">
 
                     <label class="checkbox-grid"> Allowed Grant Types
-                        <p>
-							<?php _e( 'Choosing the correct grant type for your client is important. For security reasons, a single
-							grant type should be used per client. To learn more about which grant type you will need,
-							please visit <a href="https://wp-oauth.com/documentation/overview/supported-grant-types/"
-							                title="Learn more about which grant type to use" target="_blank">https://wp-oauth.com/documentation/overview/supported-grant-types/</a>.', 'wp-oauth' ); ?>
+                        <p>To gain full access to all the grant types, you will need to purchase the Pro version.
+                            <br/><br/>
+                            <a class="button button-primary"
+                               href="https://wp-oauth.com/downloads/wp-oauth-server/?utm_source=wp-oauth-server-free&utm_medium=client-page"
+                               title="Pro WP OAuth Server">
+                                Get PRO for a discount 30% OFF
+                            </a>.
                         </p>
+
+                        <h4>Get 30% OFF using the code "PROME"</h4>
                         <hr/>
 
                         <label> <strong>Authorization Code</strong>
@@ -45,34 +45,33 @@ function wo_add_client_page() {
 
                         <label> <strong>Implicit</strong>
                             <input type="checkbox" name="grant_types[]"
-                                   value="implicit" />
+                                   value="implicit"/>
                             <small class="description">
-                                Allows implicit method. "Authorization Code" <strong>must</strong> be enabled. <strong>-
-                                    Pro Only</strong>
+                                Allows implicit method. "Authorization Code" <strong>must</strong> be enabled.
                             </small>
                         </label>
 
-                        <label> <strong>User Credentials</strong>
+                        <label> <strong>User Credentials (Pro Only)</strong>
                             <input type="checkbox" name="grant_types[]"
-                                   value="password" />
+                                   value="password" disabled="disabled"/>
                             <small class="description">
-                                Allows the client to use user credentials to authorize. <strong>- Pro Only</strong>
+                                Allows the client to use user credentials to authorize.
                             </small>
                         </label>
 
-                        <label> <strong>Client Credentials</strong>
+                        <label> <strong>Client Credentials (Pro Only)</strong>
                             <input type="checkbox" name="grant_types[]"
-                                   value="client_credentials" />
+                                   value="client_credentials" disabled="disabled"/>
                             <small class="description">
-                                Client can use the client ID and Client Secret to authorize. <strong>- Pro Only</strong>
+                                Client can use the client ID and Client Secret to authorize.
                             </small>
                         </label>
 
-                        <label> <strong>Refresh Token</strong>
+                        <label> <strong>Refresh Token (Pro Only)</strong>
                             <input type="checkbox" name="grant_types[]"
-                                   value="refresh_token" />
+                                   value="refresh_token" disabled="disabled"/>
                             <small class="description">
-                                Allows the client to request a refresh token. <strong>- Pro Only</strong>
+                                Allows the client to request a refresh token.
                             </small>
                         </label>
                     </label>
@@ -107,13 +106,16 @@ function wo_add_client_page() {
                                     <label>
                                         Client Credential Assigned User
                                         <p class="description">
-                                            The "client credential" grant types does not have a user id assigned to it
+                                            The "client credential" grant types does not have a user id assigned to
+                                            it
                                             making it hard for an application to perform protected endpoints.
                                             The client will then have the same privileges as the selected user.
                                         </p>
 										<?php
+										//$user_id = get_post_meta( $client->ID, 'user_id', true );
 										wp_dropdown_users(
 											array(
+												//'selected'         => $user_id,
 												'name'             => 'user_id',
 												'show_option_none' => '--- No User ---'
 											)
@@ -122,10 +124,14 @@ function wo_add_client_page() {
 
                                     <label> Client Scope(s)
                                         <p class="description">
-                                            Scopes can be assigned to restrict scopes. This value will also act as the
-                                            default scope for this client. If you leave this field blank, the default
-                                            scope will be <strong>"basic"</strong> and the client will have access to
-                                            all available scopes. If you have multiple scopes, please separate with a
+                                            Scopes can be assigned to restrict scopes. This value will also act as
+                                            the
+                                            default scope for this client. If you leave this field blank, the
+                                            default
+                                            scope will be <strong>"basic"</strong> and the client will have access
+                                            to
+                                            all available scopes. If you have multiple scopes, please separate with
+                                            a
                                             single space.
                                         </p>
                                         <input class="emuv-input" type="text" name="scope"
@@ -138,17 +144,7 @@ function wo_add_client_page() {
                 </div>
             </div>
 
-			<?php if ( has_a_client() ) : ?>
-                <div style="background: #e14d43; color: #fff; padding: 1em;">
-                    <p>Pro version required in order to have more then 1 client. Upgrade by
-                        <a style="color: #fff;" href="https://wp-oauth.com/downloads/wp-oauth-server/" target="_blank">
-                            <strong>clicking here</strong>
-                        </a>.
-                    </p>
-                </div>
-			<?php else: ?>
-                <?php submit_button( __( 'Create Client', 'wp-oauth' ) ); ?>
-			<?php endif; ?>
+			<?php submit_button( __( 'Create Client', 'wp-oauth' ) ); ?>
 
         </form>
 

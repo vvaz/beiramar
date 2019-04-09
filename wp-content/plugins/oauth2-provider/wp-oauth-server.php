@@ -1,11 +1,11 @@
 <?php
 /**
  * Plugin Name: WP OAuth Server
- * Plugin URI: https://wp-oauth.com
- * Version: 3.4.5
- * Description: Full OAuth 2.0 Server for WordPress. User Authorization Management Systems For WordPress. This is the Free community version of this plugin. Download the full version <a href="https://wp-oauth.com">by clicking here</a>.
- * Author: Dash10 Digital
- * Author URI: https://dash10.digital
+ * Plugin URI: http://wp-oauth.com
+ * Version: 3.7.1
+ * Description: Full OAuth2 Server for WordPress. User Authorization Management Systems For WordPress.
+ * Author: WP OAuth Server
+ * Author URI: http://wp-oauth.com
  * Text Domain: wp-oauth
  *
  * @author  Justin Greer <justin@justin-greer.com>
@@ -19,7 +19,7 @@ if ( ! defined( 'WPOAUTH_FILE' ) ) {
 }
 
 if ( ! defined( 'WPOAUTH_VERSION' ) ) {
-	define( 'WPOAUTH_VERSION', '3.4.5' );
+	define( 'WPOAUTH_VERSION', '3.7.1' );
 }
 
 // localize
@@ -34,15 +34,26 @@ function wo_load_textdomain() {
  * Since PHP 5.4, WP will through notices due to the way WP calls statically
  */
 function _wo_server_register_files() {
+
+	wp_register_script( 'wo_admin_typeahead', plugins_url( '/assets/js/typeahead.js', __FILE__ ), array( 'jquery' ) );
+	wp_enqueue_script( 'wo_admin_typeahead' );
+
+	wp_register_script( 'wo_admin_chosen', 'https://cdnjs.cloudflare.com/ajax/libs/chosen/1.8.7/chosen.jquery.min.js', array( 'jquery' ) );
+	wp_enqueue_script( 'wo_admin_chosen' );
+
 	wp_register_style( 'wo_admin', plugins_url( '/assets/css/admin.css', __FILE__ ) );
 	wp_register_script( 'wo_admin', plugins_url( '/assets/js/admin.js', __FILE__ ), array( 'jquery-ui-tabs' ) );
+
+	// Notices JS
+	wp_register_script( 'wo_admin_notices', plugins_url( '/assets/js/notices.js', __FILE__ ), array( 'jquery' ) );
+	wp_enqueue_script( 'wo_admin_notices' );
 }
 
 add_action( 'admin_enqueue_scripts', '_wo_server_register_files' );
 
 require_once( dirname( __FILE__ ) . '/includes/functions.php' );
+require_once( dirname( __FILE__ ) . '/includes/cron.php' );
 require_once( dirname( __FILE__ ) . '/wp-oauth-main.php' );
-//require_once( dirname( __FILE__ ) . '/examples.php' );
 
 /**
  * Adds/registers query vars
@@ -54,6 +65,8 @@ function _wo_server_register_query_vars() {
 
 	global $wp;
 	$wp->add_query_var( 'oauth' );
+	$wp->add_query_var( 'well-known' );
+	$wp->add_query_var( 'wpoauthincludes' );
 }
 
 add_action( 'init', '_wo_server_register_query_vars' );
@@ -70,6 +83,8 @@ add_action( 'init', '_wo_server_register_query_vars' );
  */
 function _wo_server_register_rewrites() {
 	add_rewrite_rule( '^oauth/(.+)', 'index.php?oauth=$matches[1]', 'top' );
+	add_rewrite_rule( '^.well-known/(.+)', 'index.php?well-known=$matches[1]', 'top' );
+	add_rewrite_rule( '^wpoauthincludes/(.+)', 'index.php?wpoauthincludes=$matches[1]', 'top' );
 }
 
 /**
@@ -98,6 +113,7 @@ add_filter( 'template_include', '_wo_server_template_redirect_intercept', 100 );
  * @return [type]               [description]
  */
 function _wo_server_activation( $network_wide ) {
+
 	if ( function_exists( 'is_multisite' ) && is_multisite() && $network_wide ) {
 		$mu_blogs = wp_get_sites();
 		foreach ( $mu_blogs as $mu_blog ) {
@@ -110,6 +126,9 @@ function _wo_server_activation( $network_wide ) {
 		_wo_server_register_rewrites();
 		flush_rewrite_rules();
 	}
+
+	// Schedule the cleanup workers
+	wp_schedule_event( time(), 'hourly', 'wpo_global_cleanup' );
 }
 
 register_activation_hook( __FILE__, '_wo_server_activation' );
@@ -122,6 +141,7 @@ register_activation_hook( __FILE__, '_wo_server_activation' );
  * @return [type]               [description]
  */
 function _wo_server_deactivation( $network_wide ) {
+
 	if ( function_exists( 'is_multisite' ) && is_multisite() && $network_wide ) {
 		$mu_blogs = wp_get_sites();
 		foreach ( $mu_blogs as $mu_blog ) {
@@ -132,6 +152,10 @@ function _wo_server_deactivation( $network_wide ) {
 	} else {
 		flush_rewrite_rules();
 	}
+
+	// Remove the cleanup workers.
+	wp_clear_scheduled_hook( 'wpo_global_cleanup' );
+
 }
 
 register_deactivation_hook( __FILE__, '_wo_server_deactivation' );
@@ -150,8 +174,5 @@ if ( $wp_version <= 4.3 ) {
 	add_action( 'admin_notices', 'wo_incompatibility_with_wp_version' );
 }
 
-/**
- * @todo  Move setup and upgrade inside the function wo_plugin_activate()
- */
 register_activation_hook( __FILE__, array( new WO_Server, 'setup' ) );
 register_activation_hook( __FILE__, array( new WO_Server, 'upgrade' ) );

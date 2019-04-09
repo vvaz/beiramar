@@ -15,12 +15,10 @@ function wo_server_options_page() {
     <div class="wrap">
         <h2>WP OAuth Server
             <small>
-                - CE
+                | <?php echo _WO()->version; ?>
             </small>
-            <p>
-                This area you can control the gloabl settings for WP OAuth Server.
-            </p>
         </h2>
+		<?php settings_errors(); ?>
         <div class="section group">
             <div class="col span_4_of_6">
 
@@ -41,6 +39,13 @@ function wo_server_options_page() {
                                     <td>
                                         <input type="checkbox" name="wo_options[enabled]"
                                                value="1" <?php echo $options["enabled"] == "1" ? "checked='checked'" : ""; ?> />
+                                    </td>
+                                </tr>
+                                <tr valign="top">
+                                    <th scope="row">Block Unauthenticated Requests to the REST API:</th>
+                                    <td>
+                                        <input type="checkbox" name="wo_options[block_all_unauthenticated_rest_request]"
+                                               value="1" <?php echo $options["block_all_unauthenticated_rest_request"] == "1" ? "checked='checked'" : ""; ?> />
                                     </td>
                                 </tr>
                             </table>
@@ -70,8 +75,7 @@ function wo_server_options_page() {
                                     <td>
                                         <input type="checkbox" name="wo_options[client_creds_enabled]"
                                                value="1" disabled/>
-                                        <p class="description">General API access for client. You must a assign a user
-                                            to a client. <strong> - Pro Only</strong></p>
+                                        <p class="description">Enable "Client Credentials" Grant Type</p>
                                     </td>
                                 </tr>
 
@@ -80,8 +84,7 @@ function wo_server_options_page() {
                                     <td>
                                         <input type="checkbox" name="wo_options[user_creds_enabled]"
                                                value="1" disabled/>
-                                        <p class="description">Great for Mobile Applications and Desktop Software.
-                                            <strong> - Pro Only</strong></p>
+                                        <p class="description">Enable "User Credentials" Grant Type</p>
                                     </td>
                                 </tr>
 
@@ -90,8 +93,7 @@ function wo_server_options_page() {
                                     <td>
                                         <input type="checkbox" name="wo_options[refresh_tokens_enabled]"
                                                value="1" disabled/>
-                                        <p class="description">Enable "Refresh Token" Grant Type <strong> - Pro
-                                                Only</strong></p>
+                                        <p class="description">Enable "Refresh Token" Grant Type</p>
                                     </td>
                                 </tr>
 
@@ -100,8 +102,8 @@ function wo_server_options_page() {
                                     <td>
                                         <input type="checkbox" name="wo_options[jwt_bearer_enabled]"
                                                value="1" disabled/>
-                                        <p class="description">Enable "JWT Bearer" Grant Type <strong> - Pro
-                                                Only</strong></p>
+                                        <p class="description">Enable "JWT Bearer" Grant Type <a
+                                                    href="https://wp-oauth.com/kb/grant-types/?utm_source=wp-oauth-server-free&utm_medium=settings-page">What's this?</a></p>
                                     </td>
                                 </tr>
 
@@ -109,9 +111,10 @@ function wo_server_options_page() {
                                     <th scope="row">Allow Implicit:</th>
                                     <td>
                                         <input type="checkbox" name="wo_options[implicit_enabled]"
-                                               value="1" disabled/>
-                                        <p class="description">Enable "Authorization Code (Implicit)" <strong> - Pro
-                                                Only</strong></p>
+                                               value="1" <?php echo $options["implicit_enabled"] == "1" ? "checked='checked'" : ""; ?> />
+                                        <p class="description">Enable "Authorization Code (Implicit)" <a
+                                                    href="https://wp-oauth.com/kb/grant-types/?utm_source=wp-oauth-server-free&utm_medium=settings-page">What's
+                                                this?</a></p>
                                     </td>
                                 </tr>
                             </table>
@@ -124,7 +127,7 @@ function wo_server_options_page() {
                                 <tr valign="top">
                                     <th scope="row">Token Length</th>
                                     <td>
-                                        <input type="number" name="wo_options[token_length]" min="10" max="100"
+                                        <input type="number" name="wo_options[token_length]" min="10" max="255"
                                                value="<?php echo $options["token_length"]; ?>"
                                                placeholder="40"/>
                                         <p class="description">Length of tokens</p>
@@ -167,7 +170,7 @@ function wo_server_options_page() {
                                         <input type="checkbox" name="wo_options[use_openid_connect]"
                                                value="1" disabled/>
                                         <p class="description">Enable if your server should generate a id_token when
-                                            OpenID request is made. <strong> - Pro Only</strong></p>
+                                            OpenID request is made.</p>
                                     </td>
                                 </tr>
 
@@ -195,9 +198,9 @@ function wo_server_options_page() {
                                     <td>
                                         <input type="number" name="wo_options[access_token_lifetime]"
                                                value="<?php echo $options["access_token_lifetime"]; ?>"
-                                               placeholder="3600" disabled/>
+                                               placeholder="3600"/>
                                         <p class="description">How long an access token is valid (seconds) - Leave blank
-                                            for default (1 hour) <strong> - Pro Only</strong></p>
+                                            for default (1 hour)</p>
                                     </td>
                                 </tr>
                                 <tr valign="top">
@@ -205,9 +208,9 @@ function wo_server_options_page() {
                                     <td>
                                         <input type="number" name="wo_options[refresh_token_lifetime]"
                                                value="<?php echo $options["refresh_token_lifetime"]; ?>"
-                                               placeholder="86400" disabled/>
+                                               placeholder="86400"/>
                                         <p class="description">How long a refresh token is valid (seconds) - Leave blank
-                                            for default (24 hours) <strong> - Pro Only</strong></p>
+                                            for default (24 hours)</p>
                                     </td>
                                 </tr>
                             </table>
@@ -228,27 +231,19 @@ function wo_server_options_page() {
 
             <!-- SIDEBAR -->
             <div class="col span_2_of_6 sidebar">
-                <div class="module pro-version">
-                    <h3>What does the Pro version offer?</h3>
+                <div class="module">
+                    <h3>Technical Support</h3>
                     <div class="inner">
                         <p>
-                            The pro version of this plugin is designed to give you more power over the OAuth 2.0
-                            process.
+                            Upgrade to Pro with 30% OFF and receive priority support and all the grant types.
                         </p>
 
-                        <ul>
-                            <li>Unlimited Clients</li>
-                            <li>All Grant Types</li>
-                            <li>OpenID Connect w/ Discovery</li>
-                            <li>Mobile Device User Login Capability</li>
-                            <li>Awesome Chat & Ticket Support</li>
-                        </ul>
+                        <a href="https://wp-oauth.com/downloads/wp-oauth-server/?utm_source=wp-oauth-server-free&utm_medium=settings-page"
+                           class="button button-primary">Download
+                            PRO</a>
 
-                        <h4>Discount Code: "PROME"</h4>
-                        <a href="https://wp-oauth.com/downloads/wp-oauth-server/" class="button">
-                            Purchase WP OAuth Server
-                        </a>
-                        <br/><br/>
+                        <h4>Use "PROME" at checkout for 30% OFF.</h4>
+                        <strong>Build <?php echo _WO()->version; ?></strong>
                     </div>
                 </div>
 
@@ -265,14 +260,17 @@ function wo_server_options_page() {
 						<?php
 						$current_user = wp_get_current_user();
 						?>
-                        <form action="https://wp-oauth.com/professional-services-request/">
-                            <input type="hidden" name="yourname" placeholder="Enter Your Name"
+                        <form action="https://wp-oauth.com/professional-services-request/?utm_source=wp-oauth-server-free&utm_medium=settingss-page">
+                            <input type="text" style="width: 100%;" name="yourname" placeholder="Enter Your Name"
                                    value="<?php echo $current_user->user_firstname; ?>" required/>
-                            <input type="hidden" name="email" value="<?php echo $current_user->user_email; ?>"/>
-                            <input type="hidden" name="website" value="<?php echo site_url(); ?>"/>
-
-                            <input type="submit" class="button button-primary" value="Request more information"/>
                             <br/><br/>
+                            <div style="text-align: right">
+                                <input type="hidden" name="email" value="<?php echo $current_user->user_email; ?>"/>
+                                <input type="hidden" name="website" value="<?php echo site_url(); ?>"/>
+                                <br/>
+                                <input type="submit" class="button button-primary" value="Request more information"/>
+                            </div>
+                            <br/>
                             <small>
                                 Your information is private and is not shared with anyone other than our development
                                 team.
