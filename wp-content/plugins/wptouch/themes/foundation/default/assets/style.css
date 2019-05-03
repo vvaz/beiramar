@@ -683,12 +683,12 @@ ul.dots li.active,
 
 .sharing-options {
 	text-align: center;
+    display: flex;
+    max-width: 100vw;
 }
 
 .sharing-options a {
-	width: 25%;
-	max-width: 25%;
-	display: block;
+    flex: 1;
 	font-weight: bold;
 	font-size: 90%;
 	background-color: rgba(0,0,0,.05);
@@ -697,6 +697,11 @@ ul.dots li.active,
 	float: left;
 	padding-top: 8px;
 	padding-bottom: 8px;
+}
+
+.sharing-options a + a {
+    border-left: 1px solid #FFFFFF;
+    border-right: 1px solid #FFFFFF;
 }
 
 .sharing-options.long a {
@@ -710,6 +715,14 @@ ul.dots li.active,
 	}
 
 /* @group Default */
+
+.sharing-options .sms-btn:before {
+	content: '\e812';
+	margin-right: 5px;
+	font-family: 'wptouch-icons';
+	font-weight: normal;
+	font-style: normal;
+}
 
 .sharing-options .email-btn:before {
 	content: '\e818';
@@ -751,36 +764,13 @@ ul.dots li.active,
 	font-style: normal;
 }
 
+.rtl .sharing-options .sms-btn:before,
+.rtl .sharing-options .facebook-btn:before,
+.rtl .sharing-options .twitter-btn:before,
+.rtl .sharing-options .google-btn:before,
+.rtl .sharing-options .pinterest-btn:before,
 .rtl .sharing-options .email-btn:before {
 	display: none;
-}
-
-.rtl .sharing-options .facebook-btn:before {
-	display: none;
-}
-
-.rtl .sharing-options .twitter-btn:before {
-	display: none;
-}
-
-.rtl .sharing-options .google-btn:before {
-	display: none;
-}
-
-.rtl .sharing-options .pinterest-btn:before {
-	display: none;
-}
-
-.rtl .sharing-options .email-btn:before {
-	display: none;
-}
-
-.rtl .sharing-options .email-btn:after {
-	content: '\e818';
-	margin-left: 5px;
-	font-family: 'wptouch-icons';
-	font-weight: normal;
-	font-style: normal;
 }
 
 .rtl .sharing-options .facebook-btn:after {
@@ -823,6 +813,13 @@ ul.dots li.active,
 	font-style: normal;
 }
 
+.rtl .sharing-options .sms-btn:after {
+    content: '\e812';
+    margin-left: 5px;
+    font-family: 'wptouch-icons';
+    font-weight: normal;
+    font-style: normal;
+}
 
 /* @end */
 
@@ -851,6 +848,10 @@ ul.dots li.active,
 
 .sharing-options.style-vibrant .email-btn {
 	background-color: #999;
+}
+
+.sharing-options.style-vibrant .sms-btn {
+	background-color: #32CD32;
 }
 
 /* @end */

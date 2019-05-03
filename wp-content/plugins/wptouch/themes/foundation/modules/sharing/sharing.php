@@ -29,7 +29,7 @@ function foundation_disable_sharing_links() {
 }
 
 function foundation_sharing_classes() {
-	$share_classes = array( 'sharing-options', 'wptouch-clearfix' );
+	$share_classes = array( 'sharing-options' );
 
 	$settings = foundation_get_settings();
 
@@ -99,7 +99,7 @@ function foundation_sharing_settings( $page_options ) {
 					'checkbox',
 					'show_share',
 					__( 'Show sharing links on posts', 'wptouch-pro' ),
-					__( 'Will show Facebook, Twitter, Pinterest and Email buttons.', 'wptouch-pro' ),
+					__( 'Will show Facebook, Twitter, Pinterest, Email, and SMS buttons.', 'wptouch-pro' ),
 					WPTOUCH_SETTING_BASIC,
 					'2.0'
 				),

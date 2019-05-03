@@ -2,7 +2,7 @@
 Contributors: wptouch, sureswiftcapital, duanestorey, dalemugford, adamdipardo, oxymoron
 Tags: wptouch, iphone, ipod, bravenewcode, mobile, mobile-friendly, android, blackberry, smartphone, responsive, design, mobile plugin, ios, mobile theme
 Requires at least: 4.2
-Stable tag: 4.3.36
+Stable tag: 4.3.37
 Tested up to: 5.1
 License: GPLv2
 
@@ -32,6 +32,10 @@ For more information visit [WPtouch.com](http://www.wptouch.com/?utm_campaign=wp
 6. Theme settings
 
 == Changelog ==
+
+= Version 4.3.37 (April 13th, 2019) =
+
+* Added: SMS sharing option to base Foundation theme.
 
 = Version 4.3.36 (March 26th, 2019) =
 
